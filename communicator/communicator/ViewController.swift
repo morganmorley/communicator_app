@@ -37,9 +37,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-        confirmLabel.isHidden = true
-        confirmTextField.isHidden = true
-        print("welcome")
+        setView()
     }
 
     override func didReceiveMemoryWarning() {
@@ -51,8 +49,11 @@ class ViewController: UIViewController {
     @IBAction func loginSelectorChanged(_ sender: Any) {
         // change the boolean
         isLogin = !isLogin
-        
-        // check isLogin and set the button and password confirmation prompts
+        setView()
+    }
+    
+    // checks isLogin and set the button and password confirmation prompts
+    func setView() {
         if isLogin {
             loginButton.setTitle("Login", for: .normal)
             confirmLabel.isHidden = true
@@ -67,40 +68,29 @@ class ViewController: UIViewController {
     // logs into or registers user with Firebase
     @IBAction func loginButtonTapped(_ sender: UIButton) {
         // TODO - Form validation on email and password - separate function
-        if let email = emailTextField.text, let pass = passwordTextField.text {
-            // check if login or create account view is active
-            if isLogin {
-                // sign in with Firebase
-                FIRAuth.auth()?.signIn(withEmail: email, password: pass, completion: { (user, error) in
-                    //Check that user isn't nil
-                    if let u = user {
-                        // go to roster
-                        self.performSegue(withIdentifier: "goToRoster", sender: self)
-                    } else {
-                        print("an error occured \(error)")
-                    }
-                })
-            } else {
-                if let confirmation = confirmTextField.text {
-                    if pass == confirmation {
-                        //sign up with Firebase
-                        FIRAuth.auth()?.createUser(withEmail: email, password: pass, completion: { (user, error) in
-                            if let u = user {
-                                // go to roster
-                                self.performSegue(withIdentifier: "goToRoster", sender: self)
-                            } else {
-                                print("an error occured: \(error)")
-                            }
-                        })
-                    }
-                }
-            }
-            return
+        
+        guard let email = emailTextField.text, let pass = passwordTextField.text else { print("login failed"); return }
+        func completeSignIn(user : FIRUser?, error : Error?) {
+            guard user != nil else { print("an error occured \(error)"); return }
+            self.performSegue(withIdentifier: "goToRoster", sender: self)
         }
-        print("login failed")
+        
+        // check if login or create account view is active
+        if isLogin {
+            // sign in with Firebase
+            FIRAuth.auth()?.signIn(withEmail: email, password: pass, completion: completeSignIn)
+        } else {
+            guard let confirmation = confirmTextField.text else { print("confirm password"); return }
+            if pass == confirmation {
+                //register with Firebase
+                FIRAuth.auth()?.createUser(withEmail: email, password: pass, completion: completeSignIn)
+            } else {
+                print("password and password confirmation do not match")
+            }
+        }
     }
     
-    // Dismiss the keyboard when the view is tapped on
+    // dismiss the keyboard when the view is tapped on
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         emailTextField.resignFirstResponder()
         passwordTextField.resignFirstResponder()
