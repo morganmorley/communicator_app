@@ -1,0 +1,6 @@
+framework module Pods_communicator {
+  umbrella header "Pods-communicator-umbrella.h"
+
+  export *
+  module * { export * }
+}
