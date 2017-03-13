@@ -14,37 +14,104 @@ class ProfileViewController: UIViewController {
 
     var ref: FIRDatabaseReference?
     var userForLookup: String?
+    var isAccount: Bool = false
+
     
+    @IBOutlet weak var logoutButton: UIButton!
+    @IBOutlet weak var deleteButton: UIButton!
     @IBOutlet weak var emailLabel: UILabel!
     @IBOutlet weak var nameLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        print(userForLookup ?? "no user")
         ref = FIRDatabase.database().reference()
         ref?.child("users").observeSingleEvent(of: .value, with: { (snapshot) in
             let value = snapshot.value as? Dictionary<String, Dictionary<String, Any>>
             let currentUser = FIRAuth.auth()?.currentUser?.uid
             for (user, details) in (value)! {
-                if user == currentUser {}
                 let username = details["username"] as? String ?? ""
                 if username == self.userForLookup {
+                    if user == currentUser { self.isAccount = true }
                     let email = details["email"] as? String ?? ""
                     self.nameLabel.text = username
                     self.emailLabel.text = email
                 }
             }
+            self.setView()
         })
-
-        //}) { (error) in
-          //  print(error.localizedDescription)
-        //}
+    }
+    
+    // checks isAccount and sets the logout and delete account buttons
+    func setView() {
+        if isAccount {
+            logoutButton.isHidden = false
+            deleteButton.isHidden = false
+        } else {
+            logoutButton.isHidden = true
+            deleteButton.isHidden = true
+        }
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    @IBAction func deleteButtonTapped(_ sender: Any) {
+        let user = FIRAuth.auth()?.currentUser
+        
+        if let userID = user?.uid {
+            let userRef = self.ref?.child("users").child(userID)
+            let eventsRef = self.ref?.child("posts").child("events")
+            // search user's linked events
+            userRef?.child("linked_events").observeSingleEvent(of: .value, with: { (snapshot) in
+                let value = snapshot.value as? Dictionary<String, String>
+                for (eventID, role) in value! {
+                    if role == "admin" {
+                        // delete events user administrates
+                        eventsRef?.child(eventID).removeValue { (error, ref) in
+                            if error != nil {
+                                print("error \(error)")
+                            }
+                        }
+                    } else if role == "member" {
+                        // delete user as a member of events they do not administrate
+                        eventsRef?.child(eventID).child("linked_users").child(userID).removeValue { (error, ref) in
+                            if error != nil {
+                                print("error \(error)")
+                            }
+                        }
+                    }
+                }
+            })
+            // remove the user from the database
+            userRef?.removeValue { (error, ref) in
+                if error != nil {
+                    print("error \(error)")
+                }
+            }
+        }
+        
+        user?.delete { error in
+            if error != nil {
+                // An error happened.
+            } else {
+                // Account deleted.
+            }
+        }
+        // go to login page
+        self.performSegue(withIdentifier: "goToLogin", sender: self)
+    }
+    
+    @IBAction func logoutButtonTapped(_ sender: Any) {
+        do {
+            try FIRAuth.auth()?.signOut()
+        } catch let logOutError {
+            print("Error Logging User Out - \(logOutError)")
+        }
+        // go to login page
+        self.performSegue(withIdentifier: "goToLogin", sender: self)
     }
     
     /*
