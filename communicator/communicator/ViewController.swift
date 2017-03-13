@@ -10,6 +10,7 @@
 
 import UIKit
 import FirebaseAuth
+import FirebaseDatabase
 
 class ViewController: UIViewController {
     
@@ -33,11 +34,14 @@ class ViewController: UIViewController {
     
     // boolean storing whether the login view is currently active
     var isLogin: Bool = true
+    var ref: FIRDatabaseReference?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         setView()
+        ref = FIRDatabase.database().reference()
+
     }
 
     override func didReceiveMemoryWarning() {
@@ -72,7 +76,14 @@ class ViewController: UIViewController {
         guard let email = emailTextField.text, let pass = passwordTextField.text else { print("login failed"); return }
         func completeSignIn(user : FIRUser?, error : Error?) {
             guard user != nil else { print("an error occured \(error)"); return }
-            self.performSegue(withIdentifier: "goToRoster", sender: self)
+            self.performSegue(withIdentifier: "goToStream", sender: self)
+            if isLogin == false {
+                let userID = FIRAuth.auth()?.currentUser?.uid
+                let emailArr = email.components(separatedBy: "@")
+                let username = emailArr[0]
+                let userData = ["email": email, "username": username]
+                ref?.child("users").child(userID!).setValue(userData)
+            }
         }
         
         // check if login or create account view is active

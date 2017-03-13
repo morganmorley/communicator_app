@@ -1,0 +1,71 @@
+//
+//  StreamViewController.swift
+//  communicator
+//
+//  Created by Morgan Morley Mills on 3/12/17.
+//  Copyright © 2017 Morgan Morley Mills. All rights reserved.
+//
+
+import UIKit
+import FirebaseDatabase
+
+class StreamViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+    
+    var ref: FIRDatabaseReference?
+    var databaseHandle: FIRDatabaseHandle?
+    var postData = [String]()
+
+    @IBOutlet weak var tableView: UITableView!
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        // Do any additional setup after loading the view.
+        tableView.delegate = self
+        tableView.dataSource = self
+        
+        // Set the firebase database reference:
+        ref = FIRDatabase.database().reference()
+        
+        // Retrieve posts to the stream and listen for changes:
+        let eventsRef = ref?.child("posts").child("events")
+        eventsRef?.observe(.childAdded, with: { (snapshot) in
+            let post = snapshot.value as? Dictionary<String, Any>
+            let eventTitle = post?["title"] as? String
+            if let actualPost = eventTitle {
+                self.postData.append(actualPost)
+                // Reload the tableView
+                self.tableView.reloadData()
+            }
+        })
+    }
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return postData.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
+        let cell = tableView.dequeueReusableCell(withIdentifier: "PostCell")
+        cell?.textLabel?.text = postData[indexPath.row]
+        return cell!
+    }
+
+    @IBOutlet weak var rosterButton: UITabBarItem!
+    
+    
+    /*
+    // MARK: - Navigation
+
+    // In a storyboard-based application, you will often want to do a little preparation before navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        // Get the new view controller using segue.destinationViewController.
+        // Pass the selected object to the new view controller.
+    }
+    */
+
+}
