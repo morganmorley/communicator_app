@@ -13,6 +13,8 @@ class StreamViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     var ref: FIRDatabaseReference?
     var databaseHandle: FIRDatabaseHandle?
+    
+    // titles of the events to be posted to the Stream:
     var postData = [String]()
 
     @IBOutlet weak var tableView: UITableView!
@@ -20,6 +22,7 @@ class StreamViewController: UIViewController, UITableViewDelegate, UITableViewDa
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+        // Need these to conform with UITableViewDelegate and UITableViewDataSource:
         tableView.delegate = self
         tableView.dataSource = self
         
@@ -28,6 +31,7 @@ class StreamViewController: UIViewController, UITableViewDelegate, UITableViewDa
         
         // Retrieve posts to the stream and listen for changes:
         let eventsRef = ref?.child("posts").child("events")
+        // post an event title from the database and observe changes to the database
         eventsRef?.observe(.childAdded, with: { (snapshot) in
             let post = snapshot.value as? Dictionary<String, Any>
             let eventTitle = post?["title"] as? String
@@ -45,18 +49,19 @@ class StreamViewController: UIViewController, UITableViewDelegate, UITableViewDa
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        // number of cells needed
         return postData.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
+        // add a cell
         let cell = tableView.dequeueReusableCell(withIdentifier: "PostCell")
         cell?.textLabel?.text = postData[indexPath.row]
         return cell!
     }
 
+    //TODO - Do I need this?
     @IBOutlet weak var rosterButton: UITabBarItem!
-    
     
     /*
     // MARK: - Navigation

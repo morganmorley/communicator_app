@@ -26,6 +26,7 @@ class ProfileViewController: UIViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         ref = FIRDatabase.database().reference()
+        // retrieve the email and text labels for the appropriate username clicked in roster:
         ref?.child("users").observeSingleEvent(of: .value, with: { (snapshot) in
             let value = snapshot.value as? Dictionary<String, Dictionary<String, Any>>
             let currentUser = FIRAuth.auth()?.currentUser?.uid
@@ -38,6 +39,7 @@ class ProfileViewController: UIViewController {
                     self.emailLabel.text = email
                 }
             }
+            // set the logout and delete account buttons:
             self.setView()
         })
     }

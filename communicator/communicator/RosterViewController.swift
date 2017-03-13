@@ -23,13 +23,10 @@ class RosterViewController: UIViewController, UITableViewDelegate, UITableViewDa
         tableView.delegate = self
         tableView.dataSource = self
         
-        
         // Set the firebase database reference:
         ref = FIRDatabase.database().reference()
         
-        // Retrieve posts to the stream and listen for changes:
-        //var users: [String]
-        //users.append((ref?.child("Users").key as! String)!)
+        // Retrieve posts for the stream and listen for changes from the database:
         ref?.child("users").observe(.childAdded, with: { (snapshot) in
             // Code to execute when a child is added
             // Convert the value of the data to a string:
@@ -51,11 +48,12 @@ class RosterViewController: UIViewController, UITableViewDelegate, UITableViewDa
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        // number of cells needed
         return userData.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
+        // add a cell
         let cell = tableView.dequeueReusableCell(withIdentifier: "RosterCell")
         cell?.textLabel?.text = userData[indexPath.row]
         return cell!
@@ -64,21 +62,11 @@ class RosterViewController: UIViewController, UITableViewDelegate, UITableViewDa
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "goToProfile" {
             if let profileViewController = segue.destination as? ProfileViewController {
+                // send appropriate username to userForLookup variable on Profile View Controller
                 profileViewController.userForLookup = (sender as? UITableViewCell)?.textLabel?.text ?? ""
             }
         }
     }
-    
-    //override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool
-    //{
-        // Instantiate SecondViewController
-      //  let profileViewController = self.storyboard?.instantiateViewController(withIdentifier: "ProfileViewController") as! ProfileViewController
-        
-        // Set "Hello World" as a value to myStringValue
-      //  profileViewController.userForLookup = (sender as? UITableViewCell)?.textLabel?.text ?? ""
-
-      //  return true
-    //}
 
     /*
     // MARK: - Navigation

@@ -32,10 +32,10 @@ class ComposeViewController: UIViewController {
         let title = textView.text
         let currentUser = FIRAuth.auth()?.currentUser?.uid
         let adminDict = [currentUser!: "admin"]
-        if title != "" {
+        if title != "" { // checks if inserted an empty title
             let eventRef = ref?.child("posts").child("events").childByAutoId()
-            let eventID = eventRef?.key
-            let userRef = ref?.child("users").child(currentUser!).child("linked_events").child(String(describing: eventID!))
+            let eventID = String(describing: eventRef?.key)
+            let userRef = ref?.child("users").child(currentUser!).child("linked_events").child(eventID)
             eventRef?.setValue(["title": title!, "linked_users": adminDict])
             userRef?.setValue("admin")
         }
