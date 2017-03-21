@@ -12,8 +12,10 @@ import FirebaseDatabase
 class RosterViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
     var ref: FIRDatabaseReference?
-    var databaseHandle: FIRDatabaseHandle?
-    var userData = [String]()
+    var postID: String?
+    var postType: String?
+    var userData = [String:String]()
+    var usernames = [String]()
     
     @IBOutlet weak var tableView: UITableView!
     
@@ -27,14 +29,18 @@ class RosterViewController: UIViewController, UITableViewDelegate, UITableViewDa
         ref = FIRDatabase.database().reference()
         
         // Retrieve posts for the stream and listen for changes from the database:
-        ref?.child("users").observe(.childAdded, with: { (snapshot) in
-            // Code to execute when a child is added
-            // Convert the value of the data to a string:
-            let rosterPost = snapshot.value as? Dictionary<String, Any>
-            let userTitle = rosterPost?["username"] as? String
-            
-            if let actualPost = userTitle {
-                self.userData.append(actualPost)
+        ref?.child("posts").child(postType!).child(postID!).child("linked_users").observeSingleEvent(of: .value, with: { (snapshot) in
+            if let users = snapshot.value as? Dictionary<String, String> {
+                for (userID, role) in users {
+                    if role == "rsvp" {
+                        self.ref?.child("users").child(userID).child("details").child("username").observeSingleEvent(of: .value, with: { (snapshot) in
+                            if let value = snapshot.value as? String {
+                                self.userData[value] = userID
+                                self.usernames.append(value)
+                            }
+                        })
+                    }
+                }
                 // Reload the tableView
                 self.tableView.reloadData()
             }
@@ -49,21 +55,21 @@ class RosterViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // number of cells needed
-        return userData.count
+        return usernames.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         // add a cell
         let cell = tableView.dequeueReusableCell(withIdentifier: "RosterCell")
-        cell?.textLabel?.text = userData[indexPath.row]
+        cell?.textLabel?.text = usernames[indexPath.row]
         return cell!
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "goToProfile" {
             if let profileViewController = segue.destination as? ProfileViewController {
-                // send appropriate username to userForLookup variable on Profile View Controller
-                profileViewController.userForLookup = (sender as? UITableViewCell)?.textLabel?.text ?? ""
+                // send appropriate username to userIDForLookup variable on Profile View Controller
+                profileViewController.userIDForLookup = userData[((sender as? UITableViewCell)?.textLabel?.text)!]
             }
         }
     }

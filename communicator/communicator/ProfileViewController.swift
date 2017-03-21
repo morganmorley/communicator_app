@@ -13,10 +13,11 @@ import FirebaseDatabase
 class ProfileViewController: UIViewController {
 
     var ref: FIRDatabaseReference?
-    var userForLookup: String?
+    var userRef: FIRDatabaseReference?
+    var userID: String?
+    var userIDForLookup: String?
     var isAccount: Bool = false
 
-    
     @IBOutlet weak var logoutButton: UIButton!
     @IBOutlet weak var deleteButton: UIButton!
     @IBOutlet weak var emailLabel: UILabel!
@@ -27,21 +28,18 @@ class ProfileViewController: UIViewController {
         // Do any additional setup after loading the view.
         ref = FIRDatabase.database().reference()
         // retrieve the email and text labels for the appropriate username clicked in roster:
-        ref?.child("users").observeSingleEvent(of: .value, with: { (snapshot) in
-            let value = snapshot.value as? Dictionary<String, Dictionary<String, Any>>
-            let currentUser = FIRAuth.auth()?.currentUser?.uid
-            for (user, details) in (value)! {
-                let username = details["username"] as? String ?? ""
-                if username == self.userForLookup {
-                    if user == currentUser { self.isAccount = true }
-                    let email = details["email"] as? String ?? ""
-                    self.nameLabel.text = username
-                    self.emailLabel.text = email
-                }
+        ref?.child("users").child(userIDForLookup!).child("details").observeSingleEvent(of: .value, with: { (snapshot) in
+            let details = snapshot.value as? Dictionary<String,String>
+            if let email = details?["email"], let username = details?["username"] {
+                self.nameLabel.text = username
+                self.emailLabel.text = email
             }
-            // set the logout and delete account buttons:
-            self.setView()
         })
+        // set the logout and delete account buttons:
+        userID = FIRAuth.auth()?.currentUser?.uid
+        if userIDForLookup == userID! { isAccount = true }
+        setView()
+        
     }
     
     // checks isAccount and sets the logout and delete account buttons
@@ -61,41 +59,36 @@ class ProfileViewController: UIViewController {
     }
     
     @IBAction func deleteButtonTapped(_ sender: Any) {
-        let user = FIRAuth.auth()?.currentUser
-        
-        if let userID = user?.uid {
-            let userRef = self.ref?.child("users").child(userID)
-            let eventsRef = self.ref?.child("posts").child("events")
-            // search user's linked events
-            userRef?.child("linked_events").observeSingleEvent(of: .value, with: { (snapshot) in
-                let value = snapshot.value as? Dictionary<String, String>
-                for (eventID, role) in value! {
-                    if role == "admin" {
-                        // delete events user administrates
-                        eventsRef?.child(eventID).removeValue { (error, ref) in
-                            if error != nil {
-                                print("error \(error)")
-                            }
+        let eventsRef = self.ref?.child("posts").child("events")
+        // search user's linked events:
+        userRef?.child("linked_events").observeSingleEvent(of: .value, with: { (snapshot) in
+            let value = snapshot.value as? Dictionary<String, String>
+            for (eventID, role) in value! {
+                if role == "admin" {
+                    // delete events user administrates
+                    eventsRef?.child(eventID).removeValue { (error, ref) in
+                        if error != nil {
+                            print("error \(error)")
                         }
-                    } else if role == "member" {
-                        // delete user as a member of events they do not administrate
-                        eventsRef?.child(eventID).child("linked_users").child(userID).removeValue { (error, ref) in
-                            if error != nil {
-                                print("error \(error)")
-                            }
+                    }
+                } else if role == "rsvp" || role == "shelf" {
+                    // delete user as a member of events they do not administrate
+                    eventsRef?.child(eventID).child("linked_users").child(self.userID!).removeValue { (error, ref) in
+                        if error != nil {
+                            print("error \(error)")
                         }
                     }
                 }
-            })
-            // remove the user from the database
-            userRef?.removeValue { (error, ref) in
-                if error != nil {
-                    print("error \(error)")
-                }
+            }
+        })
+        // remove the user from the database
+        userRef?.removeValue { (error, ref) in
+            if error != nil {
+                print("error \(error)")
             }
         }
         
-        user?.delete { error in
+        FIRAuth.auth()?.currentUser?.delete { error in
             if error != nil {
                 // An error happened.
             } else {
