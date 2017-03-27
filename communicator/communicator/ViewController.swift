@@ -14,27 +14,20 @@ import FirebaseDatabase
 
 class ViewController: UIViewController {
     
-    // button to toggle between login and create account views
-    @IBOutlet weak var loginSelector: UISegmentedControl!
-
-    // email address
-    @IBOutlet weak var emailTextField: UITextField!
+    var ref: FIRDatabaseReference?
     
-    // password confirmation label for hiding on login view
-    @IBOutlet weak var confirmLabel: UILabel!
-    
-    // password
-    @IBOutlet weak var passwordTextField: UITextField!
-    
-    // password confirmation
-    @IBOutlet weak var confirmTextField: UITextField!
-    
-    // button to login or sign up
+    // Outlets that change depending upon login or create account is active
     @IBOutlet weak var loginButton: UIButton!
+    @IBOutlet weak var confirmLabel: UILabel!
+    @IBOutlet weak var confirmTextField: UITextField!
+
+    // outlets that stay the same
+    @IBOutlet weak var loginSelector: UISegmentedControl!
+    @IBOutlet weak var emailTextField: UITextField!
+    @IBOutlet weak var passwordTextField: UITextField!
     
     // boolean storing whether the login view is currently active
     var isLogin: Bool = true
-    var ref: FIRDatabaseReference?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -76,14 +69,14 @@ class ViewController: UIViewController {
         guard let email = emailTextField.text, let pass = passwordTextField.text else { print("login failed"); return }
         func completeSignIn(user : FIRUser?, error : Error?) {
             guard user != nil else { print("an error occured \(error)"); return }
-            self.performSegue(withIdentifier: "goToStream", sender: self)
             if isLogin == false {
                 let userID = FIRAuth.auth()?.currentUser?.uid
                 let emailArr = email.components(separatedBy: "@")
                 let username = emailArr[0]
                 let userData = ["email": email, "username": username]
-                ref?.child("users").child(userID!).setValue(userData)
+                ref?.child("users").child(userID!).child("details").setValue(userData)
             }
+            self.performSegue(withIdentifier: "goToStream", sender: self)
         }
         
         // check if login or create account view is active

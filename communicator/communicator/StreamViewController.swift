@@ -8,14 +8,15 @@
 
 import UIKit
 import FirebaseDatabase
+import FirebaseAuth
 
 class StreamViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var ref: FIRDatabaseReference?
-    var databaseHandle: FIRDatabaseHandle?
     
     // titles of the events to be posted to the Stream:
-    var postData = [String]()
+    var postData = [String: String]()
+    var postTitles = [String] ()
 
     @IBOutlet weak var tableView: UITableView!
     
@@ -28,19 +29,45 @@ class StreamViewController: UIViewController, UITableViewDelegate, UITableViewDa
         
         // Set the firebase database reference:
         ref = FIRDatabase.database().reference()
-        
-        // Retrieve posts to the stream and listen for changes:
+        let userID = FIRAuth.auth()?.currentUser?.uid
         let eventsRef = ref?.child("posts").child("events")
-        // post an event title from the database and observe changes to the database
-        eventsRef?.observe(.childAdded, with: { (snapshot) in
-            let post = snapshot.value as? Dictionary<String, Any>
-            let eventTitle = post?["title"] as? String
-            if let actualPost = eventTitle {
-                self.postData.append(actualPost)
-                // Reload the tableView
-                self.tableView.reloadData()
+        let userRef = ref?.child("users").child(userID!)
+
+        // post all events that are in the database
+        eventsRef?.observeSingleEvent(of: .value, with: { (snapshot) in
+            if let posts = snapshot.value as? Dictionary<String,Dictionary<String,Dictionary<String,String>>> {
+                for (eventID, data) in posts {
+                    if let eventTitle = data["details"]?["title"] {
+                        self.postData[eventTitle] = eventID
+                        self.postTitles.append(eventTitle)
+                        print("+" + eventTitle)
+                    }
+                }
             }
         })
+        
+        // get rid of posts that are also in your shelf
+        userRef?.child("linked_events").observeSingleEvent(of: .value, with: { (snapshot) in
+            if let events = snapshot.value as? Dictionary<String,String> {
+                for (shelfEventID, _) in events {
+                    for (eventTitle, streamEventID) in self.postData {
+                        if streamEventID == shelfEventID {
+                            self.postData.removeValue(forKey: eventTitle)
+                            func delete(element: String, list: Array<String>) -> Array<String> {
+                                let newList = list.filter({ $0 != element })
+                                return newList
+                            }
+                            self.postTitles = delete(element: eventTitle, list: self.postTitles)
+                            print("-" + eventTitle)
+                        }
+                    }
+                }
+            }
+        })
+        // Reload the tableView
+        DispatchQueue.main.async{
+            self.tableView.reloadData()
+        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -50,18 +77,24 @@ class StreamViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // number of cells needed
-        return postData.count
+        return postTitles.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         // add a cell
         let cell = tableView.dequeueReusableCell(withIdentifier: "PostCell")
-        cell?.textLabel?.text = postData[indexPath.row]
+        cell?.textLabel?.text = postTitles[indexPath.row]
         return cell!
     }
-
-    //TODO - Do I need this?
-    @IBOutlet weak var rosterButton: UITabBarItem!
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "goToEvent" {
+            if let eventPublishedViewController = segue.destination as? EventPublishedViewController {
+                // send appropriate event ID to eventID variable on Event Published View Controller
+                eventPublishedViewController.eventID = postData[(sender as? UITableViewCell)!.textLabel!.text! as String]
+            }
+        }
+    }
     
     /*
     // MARK: - Navigation
