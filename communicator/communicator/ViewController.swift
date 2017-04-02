@@ -68,7 +68,7 @@ class ViewController: UIViewController {
         
         guard let email = emailTextField.text, let pass = passwordTextField.text else { print("login failed"); return }
         func completeSignIn(user : FIRUser?, error : Error?) {
-            guard user != nil else { print("an error occured \(error)"); return }
+            guard user != nil else { print("an error occured \(String(describing: error))"); return }
             if isLogin == false {
                 let userID = FIRAuth.auth()?.currentUser?.uid
                 let emailArr = email.components(separatedBy: "@")

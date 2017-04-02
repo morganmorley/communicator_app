@@ -11,22 +11,22 @@ import FirebaseDatabase
 import FirebaseAuth
 
 class ComposeViewController: UIViewController {
-
+    /*
     @IBOutlet weak var textView: UITextView!
     
     var ref: FIRDatabaseReference?
-    
+    */
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        ref = FIRDatabase.database().reference()
+        //ref = FIRDatabase.database().reference()
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
+    /*
     @IBAction func savePost(_ sender: Any) {
         //Post the data to firebase
         let title = textView.text
@@ -47,7 +47,7 @@ class ComposeViewController: UIViewController {
         //Dismiss the popover
         presentingViewController?.dismiss(animated: true, completion: nil)
     }
-
+ */
     /*
     // MARK: - Navigation
 

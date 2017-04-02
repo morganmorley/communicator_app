@@ -15,7 +15,6 @@ class EventComposeViewController: UIViewController {
     var ref: FIRDatabaseReference?
     @IBOutlet weak var titleTextField: UITextField!
     @IBOutlet weak var dateTimeSetter: UIDatePicker!
-    let dateTimeFormatter = DateFormatter()
     var dateTimeDisplay: String = ""
     @IBOutlet weak var placeTextField: UITextField!
     @IBOutlet weak var roomResponsibility: UISwitch!
@@ -70,8 +69,7 @@ class EventComposeViewController: UIViewController {
 
     @IBAction func dateTimeSetterChanged(_ sender: Any) {
         //set date and time for storage
-        dateTimeFormatter.dateStyle = DateFormatter.Style.full
-        dateTimeDisplay = dateTimeFormatter.string(from: dateTimeSetter.date) + " at ?"
+        dateTimeDisplay =  DateFormatter.localizedString(from: dateTimeSetter.date, dateStyle: DateFormatter.Style.full, timeStyle: DateFormatter.Style.short)
     }
     /*
     // MARK: - Navigation

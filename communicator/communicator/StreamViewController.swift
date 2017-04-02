@@ -40,7 +40,6 @@ class StreamViewController: UIViewController, UITableViewDelegate, UITableViewDa
                     if let eventTitle = data["details"]?["title"] {
                         self.postData[eventTitle] = eventID
                         self.postTitles.append(eventTitle)
-                        print("+" + eventTitle)
                     }
                 }
             }
@@ -58,16 +57,13 @@ class StreamViewController: UIViewController, UITableViewDelegate, UITableViewDa
                                 return newList
                             }
                             self.postTitles = delete(element: eventTitle, list: self.postTitles)
-                            print("-" + eventTitle)
+                            // Reload the tableView
+                            self.tableView.reloadData()
                         }
                     }
                 }
             }
         })
-        // Reload the tableView
-        DispatchQueue.main.async{
-            self.tableView.reloadData()
-        }
     }
 
     override func didReceiveMemoryWarning() {

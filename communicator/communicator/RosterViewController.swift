@@ -37,12 +37,12 @@ class RosterViewController: UIViewController, UITableViewDelegate, UITableViewDa
                             if let value = snapshot.value as? String {
                                 self.userData[value] = userID
                                 self.usernames.append(value)
+                                // Reload the tableView
+                                self.tableView.reloadData()
                             }
                         })
                     }
                 }
-                // Reload the tableView
-                self.tableView.reloadData()
             }
         })
         

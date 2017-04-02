@@ -68,14 +68,14 @@ class ProfileViewController: UIViewController {
                     // delete events user administrates
                     eventsRef?.child(eventID).removeValue { (error, ref) in
                         if error != nil {
-                            print("error \(error)")
+                            print("error \(String(describing: error))")
                         }
                     }
                 } else if role == "rsvp" || role == "shelf" {
                     // delete user as a member of events they do not administrate
                     eventsRef?.child(eventID).child("linked_users").child(self.userID!).removeValue { (error, ref) in
                         if error != nil {
-                            print("error \(error)")
+                            print("error \(String(describing: error))")
                         }
                     }
                 }
@@ -84,7 +84,7 @@ class ProfileViewController: UIViewController {
         // remove the user from the database
         userRef?.removeValue { (error, ref) in
             if error != nil {
-                print("error \(error)")
+                print("error \(String(describing: error))")
             }
         }
         

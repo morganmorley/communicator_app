@@ -40,16 +40,19 @@ class ShelfViewController: UIViewController, UITableViewDelegate, UITableViewDat
                             if let postTitle = snapshot.value as? String {
                                 self.postData[postTitle] = eventID
                                 self.postTitles.append(postTitle)
+                                // Reload the tableView
+                                self.tableView.reloadData()
+
                             }
                         })
                     }
-                    // Reload the tableView
-                    self.tableView.reloadData()
+
                 }
             })
         }
     }
 
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -62,7 +65,7 @@ class ShelfViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         // add a cell
-        let cell = tableView.dequeueReusableCell(withIdentifier: "PostCell")
+        let cell = tableView.dequeueReusableCell(withIdentifier: "StreamCell")
         cell?.textLabel?.text = postTitles[indexPath.row]
         return cell!
     }

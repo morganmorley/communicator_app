@@ -33,30 +33,41 @@ class EventPublishedViewController: UIViewController {
     @IBOutlet weak var rsvpSwitch: UISwitch!
     @IBOutlet weak var rsvpLabel: UILabel!
     
-    func setUpView() {
+    func findAdminID() {
         // Find the UID of the admin to search for their username in users
-        eventRef?.child("linked-users").observeSingleEvent(of: .value, with: { (snapshot) in
+        eventRef?.child("linked_users").observeSingleEvent(of: .value, with: { (snapshot) in
             if let eventUsers = snapshot.value as? Dictionary<String,String> {
                 for (user, role) in eventUsers {
                     if role == "admin" {
                         self.adminID = user
                     }
                 }
-            }
-        })
-        
-        // set your rsvp, shelf, and admin statuses;
-        userRef?.child("linked-events").child(eventID!).observeSingleEvent(of: .value, with: { (snapshot) in
-            if let value = snapshot.value as? String {
-                if value == "admin" {
-                    self.isAdmin = true
-                } else if value == "rsvp" {
-                    self.rsvp = true
+                if self.adminID != nil {
+                    //get admin's username for adminButton title
+                    self.ref?.child("users").child(self.adminID!).child("details").child("username").observeSingleEvent(of: .value, with: { (snapshot) in
+                        if let value = snapshot.value as? String {
+                            self.adminButton.setTitle(value, for: .normal)
+                        } else {
+                            print("Could not find admin's username.")
+                        }
+                    })
+                    //set admin view
+                    if self.adminID == self.userID {
+                        self.isAdmin = true
+                        self.addDeleteButton.isHidden = true // eventually will turn into edit button and be false
+                        self.rosterButton.isHidden = false
+                        self.shelf = true
+                    }
+                } else {
+                    print("Could not find admin linked to the event: " + String(describing: self.eventID!))
                 }
-                self.shelf = true
+            } else {
+                print("Could not find users linked to the event: " + String(describing: self.eventID!))
             }
         })
-        
+    }
+    
+    func setLabels() {
         //Set the date, time, title, and place labels as well as description scroll view
         eventRef?.child("details").observeSingleEvent(of: .value, with: { (snapshot) in
             if let eventDetails = snapshot.value as? Dictionary<String,String> {
@@ -64,22 +75,24 @@ class EventPublishedViewController: UIViewController {
                 self.titleLabel.text = eventDetails["title"]
                 self.placeLabel.text = eventDetails["place"]
                 self.descLabel.text = eventDetails["desc"]
-                if eventDetails["rsvp"] == "true" {
+                if eventDetails["rsvp"] == "true" && !self.isAdmin {
                     self.rsvpLabel.isHidden = false
                     self.rsvpSwitch.isHidden = false
                 }
+                // set rsvp label and button; set addDeleteButton title
+                self.userRef?.child("linked_events").child(self.eventID!).observeSingleEvent(of: .value, with: { (snapshot) in
+                    if let value = snapshot.value as? String {
+                        if value == "rsvp" || value == "shelf" {
+                            self.addDeleteButton.setTitle("x", for: .normal)
+                        }
+                        if value == "rsvp" {
+                            self.rsvpSwitch.isOn = true
+                            self.shelf = true
+                        }
+                    }
+                })
             }
         })
-
-        //Set the admin's username
-        if adminID != nil {
-            ref?.child("users").child(adminID!).child("details").child("username").observeSingleEvent(of: .value, with: { (snapshot) in
-                if let value = snapshot.value as? String {
-                    self.adminButton.setTitle(value, for: .normal)
-                }
-            })
-        }
-        
     }
     
     override func viewDidLoad() {
@@ -90,26 +103,18 @@ class EventPublishedViewController: UIViewController {
         eventRef = ref?.child("posts").child("events").child(eventID!)
         userID = FIRAuth.auth()?.currentUser?.uid
         userRef = ref?.child("users").child(userID!)
-
-        //Query the database
-        setUpView()
         
-        // Hide/change buttons and labels according to user's role
-        if isAdmin {
-            addDeleteButton.isHidden = true // eventually will turn into edit button and be false
-            rsvpLabel.isHidden = true
-            rsvpSwitch.isHidden = true
-            rosterButton.isHidden = false
-            return
-        }
+        //Default settings for view
+        rsvpLabel.isHidden = true
+        rsvpSwitch.isHidden = true
         addDeleteButton.isHidden = false
         addDeleteButton.setTitle("+", for: .normal)
         rosterButton.isHidden = true
-        if shelf {
-            addDeleteButton.setTitle("x", for: .normal)
-        }else if rsvp {
-            rsvpSwitch.isOn = true
-        }
+
+
+        //Query the database
+        findAdminID()
+        setLabels()
     }
 
     override func didReceiveMemoryWarning() {
@@ -117,39 +122,60 @@ class EventPublishedViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
+    func changeShelfSettings(button: Int) {
+        if ((!shelf) && (!rsvp)) {
+            //delete event from user's linked events and event's linked users
+            userRef?.child("linked_events").child(eventID!).removeValue()
+            eventRef?.child("linked_users").child(userID!).removeValue()
+            addDeleteButton.setTitle("+", for: .normal)
+            rsvpSwitch.isOn = false
+        } else {
+            switch (button) {
+            case 1:
+                // shelf button tapped
+                if (shelf && (!rsvp)) {
+                    // add event to user's shelf
+                    userRef?.child("linked_events").child(eventID!).setValue("shelf")
+                    addDeleteButton.setTitle("x", for: .normal)
+                } else if ((!shelf) && rsvp) {
+                    // remove event from shelf that user is rsvp-ed to
+                    rsvp = false
+                    changeShelfSettings(button: 0)
+                }
+                break
+            case 2:
+                //rsvp button tapped
+                if ((!shelf) && rsvp) {
+                    // rsvp to an event user doesn't have added to their shelf
+                   shelf = true
+                } else if (shelf && (!rsvp)) {
+                    // remove rsvp from an event user does have added to their shelf
+                    userRef?.child("linked_events").child(eventID!).setValue("shelf")
+                    eventRef?.child("linked_users").child(userID!).removeValue()
+                    rsvpSwitch.isOn = false
+                }
+                break
+            default:
+                break
+            }
+            if (shelf && rsvp) {
+                eventRef?.child("linked_users").child(userID!).setValue("rsvp")
+                userRef?.child("linked_events").child(eventID!).setValue("rsvp")
+                addDeleteButton.setTitle("x", for: .normal)
+                rsvpSwitch.isOn = true
+            }
+        }
+    }
+    
     @IBAction func addDelButtonTapped(_ sender: Any) {
         // if user != admin
         shelf = !shelf
-        if !shelf {
-            //delete event from your shelf
-            userRef?.child("linked-events").child(eventID!).removeValue()
-            return
-        }
-        if shelf && !rsvp {
-            //put event on your shelf
-            userRef?.child("linked-events").child(eventID!).setValue("shelf")
-        }
+        changeShelfSettings(button: 1)
     }
 
     @IBAction func rsvpSwitchChanged(_ sender: Any) {
         rsvp = !rsvp
-        if !rsvp || (shelf && rsvp) {
-            //delete event from your shelf
-            eventRef?.child("linked-users").child(userID!).removeValue()
-            userRef?.child("linked-events").child(eventID!).removeValue()
-        }
-        if !rsvp {
-            //change switch and delete user from rsvp roster list
-            rsvpSwitch.isOn = false
-            shelf = false
-        }
-        if rsvp {
-            //change switch and add user to rsvp roster list
-            rsvpSwitch.isOn = true
-            eventRef?.child("linked-users").child(userID!).setValue("rsvp")
-            userRef?.child("linked-events").child(eventID!).setValue("rsvp")
-            shelf = true
-        }
+        changeShelfSettings(button: 2)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
