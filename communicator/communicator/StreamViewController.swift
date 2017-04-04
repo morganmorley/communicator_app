@@ -20,39 +20,35 @@ class StreamViewController: UIViewController, UITableViewDelegate, UITableViewDa
 
     @IBOutlet weak var tableView: UITableView!
     
-    func splitDateTime(from dateTime: String) -> Dictionary<String,String> {
+    func splitDateTime(from dateTime: String) -> DateComponents {
         //Splits dateTime strings into discreet units for comparison
+        var dateFromFirebase = DateComponents()
+        let months = ["January": 1, "February": 2, "March": 3, "April": 4, "May": 5, "June": 6, "July": 7, "August": 8, "September": 9, "October": 10, "November": 11, "December": 12]
         let splitInput = dateTime.components(separatedBy: " at ")
         let date = splitInput[0].components(separatedBy: ", ")
         let monthAndDay = date[1].components(separatedBy: " ")
-        let month = monthAndDay[0]
-        let day = monthAndDay[1]
-        let year = date[2]
         let wholeTime = splitInput[1].components(separatedBy: " ")
         var hourAndMinute = wholeTime[0].components(separatedBy: ":")
-        let minute: Double = Double(hourAndMinute[1])! / 60
-        var hour = ""
+        
+        //Fill the dateFromFirebase
+        dateFromFirebase.month = months[monthAndDay[0]]
+        dateFromFirebase.day = Int(monthAndDay[1])
+        dateFromFirebase.year = Int(date[2])
         if wholeTime[1] == "PM" {
-            hour = String(describing: (Double(hourAndMinute[0])! + 12 + minute))
+            dateFromFirebase.hour = Int(hourAndMinute[0])! + 12 + 1 //for end time
         } else {
-            hour = String(describing: (Double(hourAndMinute[0])! + minute))
+            dateFromFirebase.hour = Int(hourAndMinute[0])! + 1 //for end time
         }
-        return ["month": month, "day": day, "year": year, "hour": hour]
+        dateFromFirebase.minute = Int(hourAndMinute[1])
+
+        return dateFromFirebase
     }
     
     func compareDateTime(with dateTime: String, event: String) -> Bool {
         // Checks that an event is either currently happening or has yet to happen. If not, it deletes the event from the database.
-        let months = ["January": 1, "February": 2, "March": 3, "April": 4, "May": 5, "June": 6, "July": 7, "August": 8, "September": 9, "October": 10, "November": 11, "December": 12]
-        let current = splitDateTime(from: DateFormatter.localizedString(from: Date(), dateStyle: DateFormatter.Style.full, timeStyle: DateFormatter.Style.short))
-        let input = splitDateTime(from: dateTime)
-        if Int(current["year"]!)! <= Int(input["year"]!)!{
-            if months[current["month"]!]! <= months[input["month"]!]! {
-                if Int(current["day"]!)! <= Int(input["day"]!)! {
-                    if Double(current["hour"]!)! <= (Double(input["hour"]!)! + 1) {
-                        return true
-                    }
-                }
-            }
+        let dateFromComponents = Calendar.current.date(from: splitDateTime(from: dateTime))!
+        if Date() < dateFromComponents {
+            return true
         }
         // remove post from database and all references to it
         ref?.child("posts").child("events").child(event).removeValue()
