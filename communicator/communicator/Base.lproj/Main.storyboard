@@ -10,6 +10,23 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
+        <!--Tab Bar Controller-->
+        <scene sceneID="3d8-fn-aXs">
+            <objects>
+                <tabBarController id="2Dn-yM-ZiO" sceneMemberID="viewController">
+                    <tabBar key="tabBar" contentMode="scaleToFill" id="vki-HR-uZT">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="49"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                    </tabBar>
+                    <connections>
+                        <segue destination="k9Y-l0-X0c" kind="relationship" relationship="viewControllers" id="2W3-Jd-FRq"/>
+                    </connections>
+                </tabBarController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="PLr-yw-Ogy" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="673" y="-761"/>
+        </scene>
         <!--View Controller-->
         <scene sceneID="tne-QT-ifu">
             <objects>
@@ -147,7 +164,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="cHZ-M1-ezH">
-                                <rect key="frame" x="12" y="108" width="351" height="515"/>
+                                <rect key="frame" x="12" y="108" width="351" height="466"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="PostCell" id="w78-OS-aqK">
@@ -258,10 +275,10 @@
             </objects>
             <point key="canvasLocation" x="1612" y="1093.4032983508246"/>
         </scene>
-        <!--Event Compose View Controller-->
+        <!--Compose Post View Controller-->
         <scene sceneID="GIB-L2-9jy">
             <objects>
-                <viewController id="fql-Hd-2gp" customClass="EventComposeViewController" customModule="communicator" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="fql-Hd-2gp" customClass="ComposePostViewController" customModule="communicator" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="i5y-lY-wmQ"/>
                         <viewControllerLayoutGuide type="bottom" id="as2-yf-u5S"/>
@@ -277,13 +294,13 @@
                                         <barButtonItem key="leftBarButtonItem" title="Cancel" id="XIp-Lt-Zr5">
                                             <color key="tintColor" red="0.50196081400000003" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                             <connections>
-                                                <action selector="cancelPost:" destination="fql-Hd-2gp" id="AcK-T1-9zS"/>
+                                                <action selector="cancelPost:" destination="fql-Hd-2gp" id="PPh-wO-kyN"/>
                                             </connections>
                                         </barButtonItem>
                                         <barButtonItem key="rightBarButtonItem" title="Save" id="lle-sy-Er5">
                                             <color key="tintColor" red="0.50196081400000003" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                             <connections>
-                                                <action selector="savePost:" destination="fql-Hd-2gp" id="5Fd-CA-vUn"/>
+                                                <action selector="savePost:" destination="fql-Hd-2gp" id="3TI-ni-Evc"/>
                                             </connections>
                                         </barButtonItem>
                                     </navigationItem>
@@ -305,7 +322,7 @@
                                     <!--2017-03-20 04:41:37 +0000-->
                                 </date>
                                 <connections>
-                                    <action selector="dateTimeSetterChanged:" destination="fql-Hd-2gp" eventType="valueChanged" id="XDt-an-GL1"/>
+                                    <action selector="dateTimeSetterChanged:" destination="fql-Hd-2gp" eventType="valueChanged" id="F20-am-uBd"/>
                                 </connections>
                             </datePicker>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dJp-u4-xMs">
@@ -314,15 +331,6 @@
                                 <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                 <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                             </label>
-                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Rnh-vf-Eqr">
-                                <rect key="frame" x="16" y="371" width="343" height="115"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="115" id="LwS-Od-Bww"/>
-                                </constraints>
-                                <nil key="textColor"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits"/>
-                            </textField>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Description" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NSI-zO-B4c">
                                 <rect key="frame" x="16" y="340" width="88" height="21"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
@@ -359,6 +367,15 @@
                                 <color key="tintColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                 <color key="onTintColor" red="0.49803921579999999" green="0.49803921579999999" blue="0.49803921579999999" alpha="1" colorSpace="calibratedRGB"/>
                             </switch>
+                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Rnh-vf-Eqr">
+                                <rect key="frame" x="16" y="373" width="343" height="115"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="115" id="LwS-Od-Bww"/>
+                                </constraints>
+                                <nil key="textColor"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits"/>
+                            </textField>
                         </subviews>
                         <color key="backgroundColor" red="0.50196081400000003" green="0.0" blue="0.25098040700000002" alpha="1" colorSpace="calibratedRGB"/>
                         <constraints>
@@ -398,12 +415,12 @@
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="dateTimeSetter" destination="EpN-rJ-YY9" id="pGc-Bz-kT8"/>
-                        <outlet property="descTextField" destination="Rnh-vf-Eqr" id="zQy-OX-Qhh"/>
-                        <outlet property="displayRSVP" destination="ZBm-GO-9iM" id="ZCS-h0-7rp"/>
-                        <outlet property="placeTextField" destination="KZl-6M-Hnv" id="5NJ-cz-4Yy"/>
-                        <outlet property="roomResponsibility" destination="KzF-Vq-658" id="gAJ-y6-e8t"/>
-                        <outlet property="titleTextField" destination="87Z-DI-flp" id="ycx-QW-LV1"/>
+                        <outlet property="dateTimeSetter" destination="EpN-rJ-YY9" id="hLv-Ow-uDU"/>
+                        <outlet property="descTextField" destination="Rnh-vf-Eqr" id="1Nb-hE-1ts"/>
+                        <outlet property="displayRSVP" destination="ZBm-GO-9iM" id="z1L-Vb-Xc6"/>
+                        <outlet property="placeTextField" destination="KZl-6M-Hnv" id="SbX-kK-N9d"/>
+                        <outlet property="roomResponsibility" destination="KzF-Vq-658" id="Uli-e4-kA5"/>
+                        <outlet property="titleTextField" destination="87Z-DI-flp" id="Igw-Ai-geU"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="EMe-pY-I8f" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -722,10 +739,11 @@
             </objects>
             <point key="canvasLocation" x="4089" y="31"/>
         </scene>
-        <!--Navigation Controller-->
+        <!--Item-->
         <scene sceneID="nU1-97-KLb">
             <objects>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="k9Y-l0-X0c" sceneMemberID="viewController">
+                    <tabBarItem key="tabBarItem" title="Item" id="eJc-7H-USi"/>
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="u16-hm-PkU">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
@@ -742,7 +760,8 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="IT2-DP-gdj"/>
+        <segue reference="2W3-Jd-FRq"/>
         <segue reference="mkV-9n-zAT"/>
+        <segue reference="1ry-Q9-Pq7"/>
     </inferredMetricsTieBreakers>
 </document>
