@@ -11,33 +11,27 @@ import FirebaseDatabase
 import FirebaseAuth
 
 class ComposeViewController: UIViewController {
-    /*
-    @IBOutlet weak var textView: UITextView!
     
+    @IBOutlet weak var textView: UITextView!
     var ref: FIRDatabaseReference?
-    */
+    var groupID: String?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        //ref = FIRDatabase.database().reference()
+        ref = FIRDatabase.database().reference()
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    /*
+    
     @IBAction func savePost(_ sender: Any) {
         //Post the data to firebase
-        let title = textView.text
-        let currentUser = FIRAuth.auth()?.currentUser?.uid
-        let adminDict = [currentUser!: "admin"]
-        if title != "" { // checks if inserted an empty title
-            let eventRef = ref?.child("posts").child("events").childByAutoId()
-            let eventID = String(describing: eventRef?.key)
-            let userRef = ref?.child("users").child(currentUser!).child("linked_events").child(eventID)
-            eventRef?.setValue(["title": title!, "linked_users": adminDict])
-            userRef?.setValue("admin")
+        let resourceText = textView.text
+        if resourceText != "" { // checks if inserted an empty title
+            ref?.child("posts").child("groups").child(groupID!).setValue(["resources": resourceText!])
         }
         //Dismiss the popover
         presentingViewController?.dismiss(animated: true, completion: nil)
@@ -47,7 +41,7 @@ class ComposeViewController: UIViewController {
         //Dismiss the popover
         presentingViewController?.dismiss(animated: true, completion: nil)
     }
- */
+
     /*
     // MARK: - Navigation
 

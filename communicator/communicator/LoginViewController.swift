@@ -12,7 +12,7 @@ import UIKit
 import FirebaseAuth
 import FirebaseDatabase
 
-class ViewController: UIViewController {
+class LoginViewController: UIViewController {
     
     var ref: FIRDatabaseReference?
     
@@ -76,7 +76,7 @@ class ViewController: UIViewController {
                 let userData = ["email": email, "username": username]
                 ref?.child("users").child(userID!).child("details").setValue(userData)
             }
-            self.performSegue(withIdentifier: "goToStream", sender: self)
+            self.performSegue(withIdentifier: "goToShelf", sender: self)
         }
         
         // check if login or create account view is active

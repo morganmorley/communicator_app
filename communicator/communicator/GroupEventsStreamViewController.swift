@@ -1,8 +1,8 @@
 //
-//  ShelfViewController.swift
+//  GroupEventsStreamViewController.swift
 //  communicator
 //
-//  Created by Morgan Morley Mills on 3/20/17.
+//  Created by Morgan Morley Mills on 4/24/17.
 //  Copyright © 2017 Morgan Morley Mills. All rights reserved.
 //
 
@@ -10,15 +10,14 @@ import UIKit
 import FirebaseDatabase
 import FirebaseAuth
 
-class ShelfViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
-
-    var ref: FIRDatabaseReference?
-    var userID: String?
+class GroupEventsStreamViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
-    // titles of the events to be posted to the Shelf:
+    var ref: FIRDatabaseReference?
+    var groupID: String?
+    
+    // titles of the events to be posted to the Stream:
     var postData = [String: String]()
-    var postTitles: [String] = []
-
+    var postTitles = [String] ()
     @IBOutlet weak var tableView: UITableView!
     
     func splitDateTime(from dateTime: String) -> DateComponents {
@@ -74,50 +73,41 @@ class ShelfViewController: UIViewController, UITableViewDelegate, UITableViewDat
         tableView.delegate = self
         tableView.dataSource = self
         
-        // Set the firebase database references:
+        // Set the firebase database reference:
         ref = FIRDatabase.database().reference()
-        userID = FIRAuth.auth()?.currentUser?.uid
+        let groupRef = ref?.child("posts").child("groups").child(groupID!)
+        let eventsRef = ref?.child("posts").child("events")
         
-        if let userRef = ref?.child("users").child(userID!), let eventsRef = ref?.child("posts").child("events") {
-            // post an event titles from the database and observe changes to the database
-            userRef.child("linked_events").observeSingleEvent(of: .value, with: { (snapshot) in
-                if let events = snapshot.value as? Dictionary<String,String> {
-                    for (eventID, _) in events {
-                        eventsRef.child(eventID).child("details").observeSingleEvent(of: .value, with: { (snapshot) in
-                            if let postDetails = snapshot.value as? Dictionary<String,String> {
-                                // check date against current date incase deletion
-                                let dateTime = postDetails["date_time"]
-                                if self.compareDateTime(with: dateTime!, event: eventID) {
-                                    let postTitle = postDetails["title"]
-                                    self.postData[postTitle!] = eventID
-                                    self.postTitles.append(postTitle!)
+        //get linked eventIDs from database
+        var eventIDs = Array<String>()
+        groupRef?.child("linked_events").observeSingleEvent(of: .value, with: { (snapshot) in
+            if let posts = snapshot.value as? Dictionary<String,String> {
+                for (eventID, _) in posts { //_ will be private or public description
+                    eventIDs.append(eventID)
+                }
+            }
+        })
+        
+        // post all events that are in the database
+        eventsRef?.observeSingleEvent(of: .value, with: { (snapshot) in
+            if let posts = snapshot.value as? Dictionary<String,Dictionary<String,Dictionary<String,String>>> {
+                for (eventID, data) in posts {
+                    if eventIDs.contains(eventID) {
+                        // check date against current date incase deletion
+                        if let dateTime = data["details"]?["date_time"] {
+                            if self.compareDateTime(with: dateTime, event: eventID) {
+                                if let eventTitle = data["details"]?["title"] {
+                                    self.postData[eventTitle] = eventID
+                                    self.postTitles.append(eventTitle)
                                 }
-                                // Reload the tableView
-                                self.tableView.reloadData()
                             }
-                        })
+                        }
                     }
                 }
-            })
-            userRef.child("linked_groups").observeSingleEvent(of: .value, with: { (snapshot) in
-                if let groups = snapshot.value as? Dictionary<String,String> {
-                    for (groupID, _) in groups {
-                        self.ref?.child("posts").child("groups").child(groupID).child("details").observeSingleEvent(of: .value, with: { (snapshot) in
-                            if let postDetails = snapshot.value as? Dictionary<String,String> {
-                                let postTitle = postDetails["title"]
-                                self.postData[postTitle!] = groupID
-                                self.postTitles.append(postTitle!)
-                                // Reload the tableView
-                                self.tableView.reloadData()
-                            }
-                        })
-                    }
-                }
-            })
-        }
+            }
+        })
     }
 
-    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -130,26 +120,19 @@ class ShelfViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         // add a cell
-        let cell = tableView.dequeueReusableCell(withIdentifier: "StreamCell")
+        let cell = tableView.dequeueReusableCell(withIdentifier: "PostCell")
         cell?.textLabel?.text = postTitles[indexPath.row]
         return cell!
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "goToGroup" {
-            if let groupPublishedViewController = segue.destination as? GroupPublishedViewController {
-                // send appropriate event ID to eventID variable on Event Published View Controller
-                groupPublishedViewController.groupID = postData[(sender as? UITableViewCell)?.textLabel?.text ?? ""]
-            }
-        }
         if segue.identifier == "goToEvent" {
             if let eventPublishedViewController = segue.destination as? EventPublishedViewController {
                 // send appropriate event ID to eventID variable on Event Published View Controller
-                eventPublishedViewController.eventID = postData[(sender as? UITableViewCell)?.textLabel?.text ?? ""]
+                eventPublishedViewController.eventID = postData[(sender as? UITableViewCell)!.textLabel!.text! as String]
             }
         }
     }
-    
 
     /*
     // MARK: - Navigation

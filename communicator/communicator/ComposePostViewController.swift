@@ -14,6 +14,7 @@ class ComposePostViewController: UIViewController {
 
     var ref: FIRDatabaseReference?
     var dateTimeDisplay: String = ""
+    var groupID: String?
     
     @IBOutlet weak var titleTextField: UITextField!
     @IBOutlet weak var dateTimeSetter: UIDatePicker!
@@ -57,6 +58,11 @@ class ComposePostViewController: UIViewController {
             let eventID = eventRef!.key as String
             ref?.child("users").child(userID).child("linked_events").child(eventID).setValue("admin")
             eventRef?.setValue(["details": eventDetails, "linked_users": adminDict])
+            
+            //link event to group
+            if let group = groupID {
+                ref?.child("posts").child("groups").child(group).child("linked_events").child(group).setValue([eventID: "public"])
+            }
             
             //Dismiss the popover
             presentingViewController?.dismiss(animated: true, completion: nil)
