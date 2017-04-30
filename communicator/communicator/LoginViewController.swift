@@ -82,7 +82,8 @@ class LoginViewController: UIViewController {
         // check if login or create account view is active
         if isLogin {
             // sign in with Firebase
-            FIRAuth.auth()?.signIn(withEmail: email, password: pass, completion: completeSignIn)
+                FIRAuth.auth()?.signIn(withEmail: email, password: pass, completion: completeSignIn)
+                //TODO - PRINT THE ERROR HANDLING FOR THE ERRORS FOR SIGNIN FUNCTION - NOT GETTING TO COMPLETION
         } else {
             guard let confirmation = confirmTextField.text else { print("confirm password"); return }
             if pass == confirmation {
