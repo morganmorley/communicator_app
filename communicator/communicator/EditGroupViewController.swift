@@ -60,9 +60,9 @@ class EditGroupViewController: UIViewController {
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "goToResource" {
-            if let composeViewController = segue.destination as? ComposeViewController {
+            if let composeResourceViewController = segue.destination as? ComposeResourceViewController {
                 // send appropriate UID to userForLookup variable on Profile View Controller
-                composeViewController.groupID = groupID!
+                composeResourceViewController.groupID = groupID!
             }
         } else if segue.identifier == "goToLinkedEvents" {
             if let groupEventsViewController = segue.destination as? GroupEventsStreamViewController {
@@ -72,15 +72,4 @@ class EditGroupViewController: UIViewController {
         }
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
 }

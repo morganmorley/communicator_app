@@ -32,9 +32,8 @@ class LoginViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-        setView()
         ref = FIRDatabase.database().reference()
-
+        setView()
     }
 
     override func didReceiveMemoryWarning() {
@@ -65,8 +64,8 @@ class LoginViewController: UIViewController {
     // logs into or registers user with Firebase
     @IBAction func loginButtonTapped(_ sender: UIButton) {
         // TODO - Form validation on email and password - separate function
-        
         guard let email = emailTextField.text, let pass = passwordTextField.text else { print("login failed"); return }
+        
         func completeSignIn(user : FIRUser?, error : Error?) {
             guard user != nil else { print("an error occured \(String(describing: error))"); return }
             if isLogin == false {
@@ -82,13 +81,14 @@ class LoginViewController: UIViewController {
         // check if login or create account view is active
         if isLogin {
             // sign in with Firebase
-                FIRAuth.auth()?.signIn(withEmail: email, password: pass, completion: completeSignIn)
-                //TODO - PRINT THE ERROR HANDLING FOR THE ERRORS FOR SIGNIN FUNCTION - NOT GETTING TO COMPLETION
+            FIRAuth.auth()?.signIn(withEmail: email, password: pass, completion: completeSignIn)
+            //TODO - PRINT THE ERROR HANDLING FOR THE ERRORS FOR SIGNIN FUNCTION - NOT GETTING TO COMPLETION
         } else {
             guard let confirmation = confirmTextField.text else { print("confirm password"); return }
             if pass == confirmation {
                 //register with Firebase
                 FIRAuth.auth()?.createUser(withEmail: email, password: pass, completion: completeSignIn)
+                //TODO - PRINT THE ERROR HANDLING FOR THE ERRORS FOR SIGNIN FUNCTION - NOT GETTING TO COMPLETION
             } else {
                 print("password and password confirmation do not match")
             }

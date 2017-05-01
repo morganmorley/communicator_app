@@ -178,6 +178,29 @@ class EventPublishedViewController: UIViewController {
         changeShelfSettings(button: 2)
     }
     
+    @IBAction func deleteEvent(_ sender: Any) {
+        //delete event from all user accounts
+        ref?.child("users").observeSingleEvent(of: .value, with: { (snapshot) in
+            if let allUsers = snapshot.value as? Dictionary<String,Dictionary<String,Dictionary<String,String>>> {
+                for (key, value) in allUsers {
+                    if (value["linked_events"]?[self.eventID!]) != nil {
+                        self.ref?.child("users").child(key).child("linked_events").child(self.eventID!).removeValue { (error, ref) in
+                            if error != nil {
+                                print("error \(String(describing: error))")
+                            }
+                        }
+                    }
+                }
+                //delete from posts[events]
+                self.ref?.child("posts").child("events").child(self.eventID!).removeValue { (error, ref) in
+                    if error != nil {
+                        print("error \(String(describing: error))")
+                    }
+                }
+            }
+        })
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "goToProfile" {
             if let profileViewController = segue.destination as? ProfileViewController {
@@ -192,16 +215,5 @@ class EventPublishedViewController: UIViewController {
             }
         }
     }
-    
-    
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
 
 }

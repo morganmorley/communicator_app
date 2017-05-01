@@ -10,7 +10,7 @@ import UIKit
 import FirebaseDatabase
 import FirebaseAuth
 
-class StreamViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class EventStreamViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var ref: FIRDatabaseReference?
     
@@ -142,15 +142,5 @@ class StreamViewController: UIViewController, UITableViewDelegate, UITableViewDa
             }
         }
     }
-    
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
 
 }
