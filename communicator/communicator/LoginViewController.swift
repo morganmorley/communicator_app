@@ -18,13 +18,12 @@ class LoginViewController: UIViewController {
     
     // Outlets that change depending upon login or create account is active
     @IBOutlet weak var loginButton: UIButton!
-    @IBOutlet weak var confirmLabel: UILabel!
-    @IBOutlet weak var confirmTextField: UITextField!
+    @IBOutlet weak var confirmTextView: UITextView!
 
     // outlets that stay the same
     @IBOutlet weak var loginSelector: UISegmentedControl!
-    @IBOutlet weak var emailTextField: UITextField!
-    @IBOutlet weak var passwordTextField: UITextField!
+    @IBOutlet weak var passwordTextView: UITextView!
+    @IBOutlet weak var emailTextView: UITextView!
     
     // boolean storing whether the login view is currently active
     var isLogin: Bool = true
@@ -52,19 +51,16 @@ class LoginViewController: UIViewController {
     func setView() {
         if isLogin {
             loginButton.setTitle("Login", for: .normal)
-            confirmLabel.isHidden = true
-            confirmTextField.isHidden = true
+            confirmTextView.isHidden = true
         } else {
             loginButton.setTitle("Sign Up", for: .normal)
-            confirmLabel.isHidden = false
-            confirmTextField.isHidden = false
+            confirmTextView.isHidden = false
         }
     }
 
     // logs into or registers user with Firebase
     @IBAction func loginButtonTapped(_ sender: UIButton) {
-        // TODO - Form validation on email and password - separate function
-        guard let email = emailTextField.text, let pass = passwordTextField.text else { print("login failed"); return }
+        guard let email = emailTextView.text, let pass = passwordTextView.text else { print("login failed"); return }
         
         func completeSignIn(user : FIRUser?, error : Error?) {
             guard user != nil else { print("an error occured \(String(describing: error))"); return }
@@ -82,13 +78,17 @@ class LoginViewController: UIViewController {
         if isLogin {
             // sign in with Firebase
             FIRAuth.auth()?.signIn(withEmail: email, password: pass, completion: completeSignIn)
-            //TODO - PRINT THE ERROR HANDLING FOR THE ERRORS FOR SIGNIN FUNCTION - NOT GETTING TO COMPLETION
         } else {
-            guard let confirmation = confirmTextField.text else { print("confirm password"); return }
+            guard let confirmation = confirmTextView.text else { print("confirm password error"); return }
+            if (email.components(separatedBy: "@")[1] != "bennington.edu")
+                || (pass.characters.count > 16)
+                || (email.characters.count > 254) {
+                print("form invalid error")
+                return
+            }
             if pass == confirmation {
                 //register with Firebase
                 FIRAuth.auth()?.createUser(withEmail: email, password: pass, completion: completeSignIn)
-                //TODO - PRINT THE ERROR HANDLING FOR THE ERRORS FOR SIGNIN FUNCTION - NOT GETTING TO COMPLETION
             } else {
                 print("password and password confirmation do not match")
             }
@@ -97,8 +97,8 @@ class LoginViewController: UIViewController {
     
     // dismiss the keyboard when the view is tapped on
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        emailTextField.resignFirstResponder()
-        passwordTextField.resignFirstResponder()
+        emailTextView.resignFirstResponder()
+        passwordTextView.resignFirstResponder()
     }
 
 }
