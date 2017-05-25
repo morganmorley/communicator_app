@@ -12,9 +12,9 @@ import FirebaseAuth
 
 class SetTimeViewController: UIViewController {
 
-    var eventIDForLookup: String?
     var ref: FIRDatabaseReference?
     var eventRef: FIRDatabaseReference?
+    var eventIDForLookup: String?
 
     @IBOutlet weak var startDateTimeSetter: UIDatePicker!
     @IBOutlet weak var endDateTimeSetter: UIDatePicker!

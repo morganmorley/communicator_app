@@ -16,7 +16,7 @@ class LoginViewController: UIViewController {
     
     var ref: FIRDatabaseReference?
     
-    // Outlets that change depending upon login or create account is active
+    // outlets that change depending upon login or create account is active
     @IBOutlet weak var loginButton: UIButton!
     @IBOutlet weak var confirmTextView: UITextView!
 
@@ -30,14 +30,12 @@ class LoginViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
         ref = FIRDatabase.database().reference()
         setView()
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
 
     // switches between login and create account views and buttons

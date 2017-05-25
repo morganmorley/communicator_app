@@ -19,9 +19,7 @@ class ProfileViewController: UIViewController {
     @IBOutlet weak var usernameTextView: UILabel!
     @IBOutlet weak var postsTextView: UITextView!
     @IBOutlet weak var emailTextView: UILabel!
-    
-    var promotedPosts = [String: [String: String]]()
-    
+        
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
@@ -37,16 +35,11 @@ class ProfileViewController: UIViewController {
             self.ref?.child("user_profiles").child("possible").observeSingleEvent(of: .value, with: { (snapshot) in
                 if let posts = snapshot.value as? Dictionary<String,Dictionary<String,Dictionary<String,String>>> {
                     for (year, promoted) in posts {
-                        self.promotedPosts[year] = [:]
-                        for (_, post) in promoted {
-                            self.promotedPosts[year]![post["name"]!] = post["role"]!
-                        }
-                    }
-                    for (year, posts) in self.promotedPosts {
                         self.postsTextView.text = self.postsTextView.text + "\n" + year + "\n"
-                        for (name, role) in posts {
-                            self.postsTextView.text = self.postsTextView.text + role + " in "
-                            self.postsTextView.text = self.postsTextView.text + name + "\n"
+                        for (_, post) in promoted {
+                            self.postsTextView.text = self.postsTextView.text + post["role"]! + " in "
+                            self.postsTextView.text = self.postsTextView.text + post["name"]! + "\n"
+
                         }
                     }
                 }
