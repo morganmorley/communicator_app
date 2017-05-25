@@ -42,25 +42,25 @@ class EditGroupViewController: UIViewController {
         ref = FIRDatabase.database().reference()
         // Load details from remote source or create a new reference
         if let group = groupID {
-            ref?.child("posts").child("groups").child("drafts").observeSingleEvent(of: .value, with: { (snapshot) in
+            ref?.child("groups").child("drafts").observeSingleEvent(of: .value, with: { (snapshot) in
                 if snapshot.hasChild(group){
-                    self.ref?.child("posts").child("groups").child("drafts").child(group).observeSingleEvent(of: .value, with: { (snapshot) in
+                    self.ref?.child("groups").child("drafts").child(group).observeSingleEvent(of: .value, with: { (snapshot) in
                         if let value = snapshot.value as? Dictionary<String,Dictionary<String,String>> {
                             self.populate(with: value)
-                            self.groupRef = self.ref?.child("posts").child("groups").child("drafts").child(group)
+                            self.groupRef = self.ref?.child("groups").child("drafts").child(group)
                         }
                     })
                 } else {
-                    self.ref?.child("posts").child("groups").child("current").child(group).observeSingleEvent(of: .value, with: { (snapshot) in
+                    self.ref?.child("groups").child("current").child(group).observeSingleEvent(of: .value, with: { (snapshot) in
                         if let value = snapshot.value as? Dictionary<String,Dictionary<String,String>> {
                             self.populate(with: value)
-                            self.groupRef = self.ref?.child("posts").child("groups").child("current").child(group)
+                            self.groupRef = self.ref?.child("groups").child("current").child(group)
                         }
                     })
                 }
             })
         } else {
-            groupRef = ref?.child("posts").child("groups").childByAutoId()
+            groupRef = ref?.child("groups").child("drafts").childByAutoId()
             groupID = groupRef!.key as String
         }
     }
@@ -99,15 +99,28 @@ class EditGroupViewController: UIViewController {
                 groupDetails["desc"] = titleTextView.text ?? ""
                 
                 // post details to the database
-                ref?.child("posts").child("groups").child(status).observeSingleEvent(of: .value, with: { (snapshot) in
+                ref?.child("groups").child(status).observeSingleEvent(of: .value, with: { (snapshot) in
                     if snapshot.hasChild(group){
-                        self.ref?.child("posts").child("groups").child(status).child(group).setValue(["details": groupDetails])
-                        self.ref?.child("posts").child("groups").child(status).child(group).child("linked_users").child(userID).setValue("admin")
-                        self.ref?.child("users").child(userID).child("linked_groups").child(self.groupID!).setValue("admin")
+                        self.ref?.child("groups").child(status).child(group).setValue(["details": groupDetails])
+                        self.ref?.child("groups").child(status).child(group).child("linked_users").child(userID).setValue("admin")
+                        self.ref?.child("user_details").child(userID).child("linked_groups").child(self.groupID!).setValue("admin")
                         if !isDraft {
-                            //save group in promoted posts as it's published for the first time.
-                            let postDetails = [self.year: [group: ["name": self.titleTextView.text, "role": "admin"]]]
-                            self.ref?.child("users").child(userID).child("promoted_posts").child("possible").setValue(postDetails)
+                            //save group in promoted posts as it's published.
+                            let calendar = Calendar.current
+                            let year = String(calendar.component(.year, from: Date()))
+                            let postDetails = [year: [group: ["name": self.titleTextView.text, "role": "admin"]]]
+                            self.ref?.child("user_profiles").child(userID).child("hidden").child(year).observeSingleEvent(of: .value, with: { (snapshot) in
+                                if !snapshot.hasChild(group) {
+                                    self.ref?.child("user_profiles").child(userID).child("current").child(year).observeSingleEvent(of: .value, with: { (snapshot) in
+                                        if !snapshot.hasChild(group) {
+                                            self.ref?.child("user_profiles").child(userID).child("possible").child(year).child(group).setValue(postDetails)
+                                        } else {
+                                            self.ref?.child("user_profiles").child(userID).child("current").child(year).child(group).setValue(postDetails)
+                                        }
+                                    })
+                                    
+                                }
+                            })
                         }
                     }else{
                         let adminDict = [userID: "admin"]
@@ -136,6 +149,12 @@ class EditGroupViewController: UIViewController {
     }
     
     @IBAction func cancelPost(_ sender: Any) {
+        //delete any saved content in events/drafts
+        self.ref?.child("groups").child("drafts").child(self.groupID!).removeValue { (error, ref) in
+            if error != nil {
+                print("error \(String(describing: error))")
+            }
+        }
         //Dismiss the popover
         presentingViewController?.dismiss(animated: true, completion: nil)
     }
@@ -163,13 +182,13 @@ class EditGroupViewController: UIViewController {
                 }
             }
             //delete group from groups/drafts
-            self.ref?.child("posts").child("groups").child("drafts").child(self.groupID!).removeValue { (error, ref) in
+            self.ref?.child("groups").child("drafts").child(self.groupID!).removeValue { (error, ref) in
                 if error != nil {
                     print("error \(String(describing: error))")
                 }
             }
             //delete group from groups/current
-            self.ref?.child("posts").child("groups").child("current").child(self.groupID!).removeValue { (error, ref) in
+            self.ref?.child("groups").child("current").child(self.groupID!).removeValue { (error, ref) in
                 if error != nil {
                     print("error \(String(describing: error))")
                 }

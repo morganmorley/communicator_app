@@ -70,7 +70,6 @@ class EventsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
         // Need these to conform with UITableViewDelegate and UITableViewDataSource:
         tableView.delegate = self
         tableView.dataSource = self
@@ -98,7 +97,7 @@ class EventsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             self.eventsRef?.observeSingleEvent(of: .value, with: { (snapshot) in
                 if let streamEvents = snapshot.value as? Dictionary<String,Dictionary<String,Dictionary<String,String>>> {
                     for (eventID, data) in streamEvents {
-                        // check date against current date incase deletion
+                        // TODO - check date against current date incase deletion
                         //if let dateTime = data["details"]?["date_time"] {
                             //if self.compareDateTime(with: dateTime, event: eventID) {
                                 if let eventTitle = data["details"]?["title"] {
@@ -119,7 +118,6 @@ class EventsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     }
 
     override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
     

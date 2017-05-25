@@ -24,7 +24,6 @@ class MemberProfileViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
         ref = FIRDatabase.database().reference()
         
         // retrieve the email and text labels for the appropriate username clicked in roster:
@@ -61,7 +60,6 @@ class MemberProfileViewController: UIViewController {
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
     
     // dismiss the keyboard when the view is tapped on

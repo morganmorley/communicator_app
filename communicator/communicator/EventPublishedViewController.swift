@@ -48,9 +48,9 @@ class EventPublishedViewController: UIViewController {
                 }
                 if self.adminID != nil {
                     //get admin's username for adminButton title
-                    self.ref?.child("users").child(self.adminID!).child("details").child("username").observeSingleEvent(of: .value, with: { (snapshot) in
-                        if let value = snapshot.value as? String {
-                            self.adminButton.setTitle(value, for: .normal)
+                    self.ref?.child("user_details").child(self.adminID!).child("details").child("username").observeSingleEvent(of: .value, with: { (snapshot) in
+                        if let username = snapshot.value as? String {
+                            self.adminButton.setTitle(username, for: .normal)
                         } else {
                             print("Could not find admin's username.")
                         }
@@ -72,28 +72,81 @@ class EventPublishedViewController: UIViewController {
         })
     }
     
+    func splitDateTime(from dateTime: String) -> DateComponents {
+        //Splits dateTime strings into discreet units for comparison
+        var dateFromFirebase = DateComponents()
+        let months = ["January": 1, "February": 2, "March": 3, "April": 4, "May": 5, "June": 6, "July": 7, "August": 8, "September": 9, "October": 10, "November": 11, "December": 12]
+        let splitInput = dateTime.components(separatedBy: " at ")
+        let date = splitInput[0].components(separatedBy: ", ")
+        let monthAndDay = date[1].components(separatedBy: " ")
+        let wholeTime = splitInput[1].components(separatedBy: " ")
+        var hourAndMinute = wholeTime[0].components(separatedBy: ":")
+        
+        //Fill the dateFromFirebase
+        dateFromFirebase.month = months[monthAndDay[0]]
+        dateFromFirebase.day = Int(monthAndDay[1])
+        dateFromFirebase.year = Int(date[2])
+        if wholeTime[1] == "PM" {
+            dateFromFirebase.hour = Int(hourAndMinute[0])! + 12 + 1 //for end time
+        } else {
+            dateFromFirebase.hour = Int(hourAndMinute[0])! + 1 //for end time
+        }
+        dateFromFirebase.minute = Int(hourAndMinute[1])
+        
+        return dateFromFirebase
+    }
+    
+    func compareDateTime(with dateTime: String, event: String) -> Bool {
+        // Checks that an event is either currently happening or has yet to happen. If not, it deletes the event from the database.
+        let dateFromComponents = Calendar.current.date(from: splitDateTime(from: dateTime))!
+        if Date() < dateFromComponents {
+            return true
+        }
+        // remove post from database and all references to it
+        ref?.child("events").child(event).removeValue()
+        ref?.child("users").observeSingleEvent(of: .value, with: { (snapshot) in
+            if let users = snapshot.value as? Dictionary<String,Dictionary<String,Dictionary<String,String>>> {
+                for (user, data) in users {
+                    for (eventID, _) in data["linked_events"]! {
+                        if eventID == event {
+                            self.ref?.child("users").child(user).child("linked_events").child(eventID).removeValue()
+                        }
+                    }
+                }
+            }
+        })
+        return false
+    }
+
+    
+    func divideDatetimes(start: String, end: String) {
+        //Splits datetime strings into discreet units for publishing
+        let startSplitInput = start.components(separatedBy: " at ")
+        let startDate = startSplitInput[0].components(separatedBy: ", ")
+        let startMonthAndDay = startDate[1].components(separatedBy: " ")
+        let startWholeTime = startSplitInput[1]
+        self.startMonthYearTextView.text = startMonthAndDay[0] + " " + startDate[2]
+        self.startDayTextView.text = startDate[0]
+        self.startDateTextView.text = startMonthAndDay[1]
+        let endSplitInput = end.components(separatedBy: " at ")
+        let endDate = endSplitInput[0].components(separatedBy: ", ")
+        if endDate != startDate {
+            let endMonthAndDay = endDate[1].components(separatedBy: " ")
+            self.endMonthYearTextView.text = endMonthAndDay[0] + " " + endDate[2]
+            self.endDayTextView.text = endDate[0]
+            self.endDateTextView.text = endMonthAndDay[1]
+        }
+        let endWholeTime = endSplitInput[1]
+        self.startToEndTimeTextView.text = startWholeTime + " to " + endWholeTime
+    }
+    
     func setLabels() {
         //Set the date, time, title, and place labels as well as description scroll view
         eventRef?.child("details").observeSingleEvent(of: .value, with: { (snapshot) in
             if let eventDetails = snapshot.value as? Dictionary<String,String> {
-                self.startMonthYearTextView.text = eventDetails["start_month"]! + " " + eventDetails["start_year"]!
-                self.startDayTextView.text = eventDetails["start_day"]!
-                self.startDateTextView.text = eventDetails["start_date"]!
-                //TODO - make an actual time comparison
-                let startDate = eventDetails["start_day"]! + eventDetails["start_date"]! + eventDetails["start_month"]! + eventDetails["start_year"]!
-                let endDate = eventDetails["start_day"]! + eventDetails["start_date"]! + eventDetails["start_month"]! + eventDetails["start_year"]!
-                if startDate != endDate {
-                    self.endMonthYearTextView.text = eventDetails["end_month"]! + " " + eventDetails["end_year"]!
-                    self.endDayTextView.text = eventDetails["end_day"]!
-                    self.endDateTextView.text = eventDetails["end_date"]!
-                } else {
-                    self.endMonthYearTextView.isHidden = true
-                    self.endDayTextView.isHidden = true
-                    self.endDateTextView.isHidden = true
-                }
-                self.startToEndTimeTextView.text = eventDetails["times"]!
+                self.divideDatetimes(start: eventDetails["start_datetime"]!, end: eventDetails["end_datetime"]!)
                 self.titleTextView.text = eventDetails["title"]!
-                self.locationTextView.text = eventDetails["place"]!
+                self.locationTextView.text = eventDetails["location"]!
                 self.descTextView.text = eventDetails["desc"]!
                 if ((eventDetails["rsvp"]! == "true") && (!self.isAdmin)) {
                     self.rsvpButton.setTitle("RSVP", for: .normal)
@@ -101,10 +154,10 @@ class EventPublishedViewController: UIViewController {
                 // set rsvp label and button; set addDeleteButton title
                 self.userRef?.child("linked_events").child(self.eventID!).observeSingleEvent(of: .value, with: { (snapshot) in
                     if let value = snapshot.value as? String {
-                        if value == "rsvp" || value == "shelf" {
+                        if ((value == "rsvp") || (value == "shelf")) {
                             self.shelfEditButton.title = "Unshelf"
                         }
-                        if value == "rsvp" {
+                        if (value == "rsvp") {
                             self.rsvpButton.setTitle("Cancel RSVP", for: .normal)
                             self.shelf = true
                         }
@@ -116,12 +169,11 @@ class EventPublishedViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
         // Set up references to the database and find the current user's ID
         ref = FIRDatabase.database().reference()
-        eventRef = ref?.child("posts").child("events").child(eventID!)
+        eventRef = ref?.child("events").child("current").child(eventID!)
         userID = FIRAuth.auth()?.currentUser?.uid
-        userRef = ref?.child("users").child(userID!)
+        userRef = ref?.child("user_details").child(userID!)
         
         //Default settings for view
         rsvpButton.isHidden = true
@@ -133,7 +185,6 @@ class EventPublishedViewController: UIViewController {
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
     
     func changeShelfSettings(button: Int) {
@@ -149,7 +200,8 @@ class EventPublishedViewController: UIViewController {
                 // shelf button tapped
                 if (shelf && (!rsvp)) {
                     // add event to user's shelf
-                    userRef?.child("linked_events").child(eventID!).setValue("shelf")
+                    userRef?.child("linked_events").child(eventID!).setValue(titleTextView.text)
+                    eventRef?.child("linked_users").child(userID!).setValue("shelf")
                     shelfEditButton.title = "Unshelf"
                 } else if ((!shelf) && rsvp) {
                     // remove event from shelf that user is rsvp-ed to
@@ -164,7 +216,7 @@ class EventPublishedViewController: UIViewController {
                    shelf = true
                 } else if (shelf && (!rsvp)) {
                     // remove rsvp from an event user does have added to their shelf
-                    userRef?.child("linked_events").child(eventID!).setValue("shelf")
+                    userRef?.child("linked_events").child(eventID!).setValue(titleTextView.text as String)
                     eventRef?.child("linked_users").child(userID!).removeValue()
                     rsvpButton.setTitle("RSVP", for: .normal)
                 }
@@ -174,15 +226,15 @@ class EventPublishedViewController: UIViewController {
             }
             if (shelf && rsvp) {
                 eventRef?.child("linked_users").child(userID!).setValue("rsvp")
-                userRef?.child("linked_events").child(eventID!).setValue("rsvp")
+                userRef?.child("linked_events").child(eventID!).setValue(titleTextView.text as String)
                 shelfEditButton.title = "Unshelf"
                 rsvpButton.setTitle("Cancel RSVP", for: .normal)
             }
         }
     }
     
-    func updateUser() {
-        //TODO - add change in shelf and rsvp status to user database
+    @IBAction func adminButtonTapped(_ sender: Any) {
+        self.performSegue(withIdentifier: "goToProfile", sender: self)
     }
     
     @IBAction func shelfEditButtonTapped(_ sender: Any) {
@@ -190,7 +242,7 @@ class EventPublishedViewController: UIViewController {
             shelf = !shelf
             changeShelfSettings(button: 1)
         } else {
-            //TODO - segue to edit event
+            self.performSegue(withIdentifier: "goToEditEvent", sender: self)
         }
     }
 
@@ -199,7 +251,7 @@ class EventPublishedViewController: UIViewController {
             rsvp = !rsvp
             changeShelfSettings(button: 2)
         } else {
-            //TODO - segue to roster
+            self.performSegue(withIdentifier: "goToRoster", sender: self)
         }
     }
     
@@ -213,6 +265,11 @@ class EventPublishedViewController: UIViewController {
             if let rosterViewController = segue.destination as? RosterViewController {
                 // send along the appropriate post type (groups or events) and the postId
                 rosterViewController.postID = eventID!
+            }
+        } else if segue.identifier == "goToEditEvent" {
+            if let editEventViewController = segue.destination as? EditEventViewController {
+                // send along the appropriate post type (groups or events) and the postId
+                editEventViewController.eventID = eventID!
             }
         }
     }
