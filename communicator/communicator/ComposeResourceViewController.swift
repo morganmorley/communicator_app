@@ -30,11 +30,11 @@ class ComposeResourceViewController: UIViewController {
     @IBAction func savePost(_ sender: Any) {
         //Post the data to firebase
         let resourceText = textView.text
-        if resourceText != "" { // checks if inserted an empty title
-            ref?.child("posts").child("groups").child(groupID!).setValue(["resources": resourceText!])
+        if groupID != nil { // checks if inserted an empty title
+            ref?.child("groups").child("drafts").child(groupID!).child("details").setValue(["resources": resourceText ?? ""])
+            //Dismiss the popover
+            presentingViewController?.dismiss(animated: true, completion: nil)
         }
-        //Dismiss the popover
-        presentingViewController?.dismiss(animated: true, completion: nil)
     }
     
     @IBAction func cancelPost(_ sender: Any) {

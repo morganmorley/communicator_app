@@ -130,8 +130,7 @@ class EditEventViewController: UIViewController {
             saveActions()
             if let setTimeViewController = segue.destination as? SetTimeViewController {
                 //send appropriate eventID for saving the time on Set Tiime View Controller
-                setTimeViewController.eventID = eventID!
-                setTimeViewController.isDraft = isDraft!
+                setTimeViewController.eventIDForLookup = eventID!
             }
         }
     }

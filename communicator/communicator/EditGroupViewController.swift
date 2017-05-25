@@ -21,9 +21,8 @@ class EditGroupViewController: UIViewController {
     @IBOutlet weak var titleTextView: UITextView!
     @IBOutlet weak var descTextView: UITextView!
     @IBOutlet weak var addEventButton: UIButton!
-    @IBOutlet weak var membersTableView: UITableViewCell!
-    @IBOutlet weak var eventsTableView: UITableView!
     @IBOutlet weak var deleteGroupButton: UIButton!
+    @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var editResourcesButton: UIButton!
     
     var year = "2017" //TODO - make dynamic
@@ -32,6 +31,10 @@ class EditGroupViewController: UIViewController {
     var memberDetails = [String: [String: String]]()
     var memberList = [String]()
     var user = ""
+    
+    var eventData = [String: String]()
+    var eventTitles = [String]()
+    var tableTitles: [[String]] { return [memberList, eventTitles] }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,33 +44,18 @@ class EditGroupViewController: UIViewController {
         if let group = groupID {
             ref?.child("posts").child("groups").child("drafts").observeSingleEvent(of: .value, with: { (snapshot) in
                 if snapshot.hasChild(group){
-                    if let value = snapshot.value as? Dictionary<String,Dictionary<String,Dictionary<String,String>>> {
-                        titleTextView.text = value[group]["details"]["title"]
-                        descTextView.text = value[group]["details"]["desc"]
-                        for (memberID, role) in value[group]["linked_users"] {
-                            self.ref?.child("user_details").child(memberID).child("details").child("username").observeSingleEvent(of: .value, with: { (snapshot) in
-                                let username = snapshot.value as? String
-                                self.memberDetails[memberID] = [username: role]
-                                self.memberList.append(role + " - " + username)
-                            })
-                        }
-                        groupRef = ref?.child("posts").child("groups").child("drafts").child(group)
-
-                    }
-                } else {
-                    ref?.child("posts").child("groups").child("current").child(group).observeSingleEvent(of: .value, with: { (snapshot) in
+                    self.ref?.child("posts").child("groups").child("drafts").child(group).observeSingleEvent(of: .value, with: { (snapshot) in
                         if let value = snapshot.value as? Dictionary<String,Dictionary<String,String>> {
-                            titleTextView.text = value["details"]["title"]
-                            descTextView.text = value["details"]["desc"]
-                            for (memberID, role) in value["linked_users"] {
-                                self.ref?.child("user_details").child(memberID).child("details").child("username").observeSingleEvent(of: .value, with: { (snapshot) in
-                                    let username = snapshot.value as? String
-                                    self.memberDetails[memberID] = [username: role]
-                                    self.memberList.append(role + " - " + username)
-                                })
-                            }
+                            self.populate(with: value)
+                            self.groupRef = self.ref?.child("posts").child("groups").child("drafts").child(group)
                         }
-                        groupRef = ref?.child("posts").child("groups").child("current").child(group)
+                    })
+                } else {
+                    self.ref?.child("posts").child("groups").child("current").child(group).observeSingleEvent(of: .value, with: { (snapshot) in
+                        if let value = snapshot.value as? Dictionary<String,Dictionary<String,String>> {
+                            self.populate(with: value)
+                            self.groupRef = self.ref?.child("posts").child("groups").child("current").child(group)
+                        }
                     })
                 }
             })
@@ -77,16 +65,24 @@ class EditGroupViewController: UIViewController {
         }
     }
 
+    func populate(with value: [String: [String: String]]) {
+        self.titleTextView.text = value["details"]?["title"] ?? ""
+        self.descTextView.text = value["details"]?["desc"] ?? ""
+        for (memberID, role) in value["linked_users"]! {
+            self.ref?.child("user_details").child(memberID).child("details").child("username").observeSingleEvent(of: .value, with: { (snapshot) in
+                let username = snapshot.value as? String
+                self.memberDetails[memberID] = [username!: role]
+                self.memberList.append(role + " - " + username!)
+            })
+        }
+    }
+
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
     
-    //TODO - if a member cell touched
-    
-    //TODO - if an event cell touched
-    
-    func saveGroup(isDraft: Bool, segueID: String) {
+    func saveGroup(isDraft: Bool) {
         var status = ""
         if isDraft {
             status = "draft"
@@ -101,6 +97,8 @@ class EditGroupViewController: UIViewController {
                 var groupDetails = Dictionary<String,String>()
                 groupDetails["title"] = titleTextView.text ?? ""
                 groupDetails["desc"] = titleTextView.text ?? ""
+                
+                // post details to the database
                 ref?.child("posts").child("groups").child(status).observeSingleEvent(of: .value, with: { (snapshot) in
                     if snapshot.hasChild(group){
                         self.ref?.child("posts").child("groups").child(status).child(group).setValue(["details": groupDetails])
@@ -127,38 +125,14 @@ class EditGroupViewController: UIViewController {
                         //Dismiss the popover
                         self.presentingViewController?.dismiss(animated: true, completion: nil)
                     } else {
-                        segueView(segueID)
                     }
                 })
             }
         }
     }
     
-    func segueView(_ segueID: String) {
-        saveGroup(isDraft: true)
-        if segueID == "goToResources" {
-            if let composeResourceViewController = segue.destination as? ComposeResourceViewController {
-                // send appropriate UID to userForLookup variable on Profile View Controller
-                composeResourceViewController.groupID = groupID!
-            }
-        } else if segueID == "goToEditEvent" {
-            if let eventPublishedViewController = segue.destination as? EventPublishedViewController {
-                if !isNewEvent {
-                    // send appropriate event ID to eventID variable on Event Published View Controller
-                    eventPublishedViewController.eventID = eventData[(sender as? UITableViewCell)!.textLabel!.text! as String]
-                }
-            }
-        } else if segueID == "goToMemberProfile" {
-            if let profileViewController = segue.destination as? ProfileViewController {
-                // send appropriate UID to userForLookup variable on Profile View Controller
-                profileViewController.userIDForLookup = memberDetails[user]
-            }
-        }
-        self.performSegue(withIdentifier: segueID, sender: self)
-    }
-    
     @IBAction func savePost(_ sender: Any) {
-        saveGroup(isDraft: false, segueID: "")
+        saveGroup(isDraft: false)
     }
     
     @IBAction func cancelPost(_ sender: Any) {
@@ -169,7 +143,9 @@ class EditGroupViewController: UIViewController {
 
     @IBAction func addEventButtonTapped(_ sender: Any) {
         isNewEvent = true
-        saveGroup(isDraft: true, segueID: "goToEditEvent")
+        saveGroup(isDraft: true)
+        self.performSegue(withIdentifier: "goToEditEvent", sender: self)
+
     }
     
     @IBAction func deleteGroupButtonTapped(_ sender: Any) {
@@ -187,24 +163,32 @@ class EditGroupViewController: UIViewController {
                 }
             }
             //delete group from groups/drafts
-            ref?.child("posts").child("groups").child("drafts").child(groupID).removeValue { (error, ref) in
+            self.ref?.child("posts").child("groups").child("drafts").child(self.groupID!).removeValue { (error, ref) in
                 if error != nil {
                     print("error \(String(describing: error))")
                 }
             }
             //delete group from groups/current
-            ref?.child("posts").child("groups").child("current").child(groupID).removeValue { (error, ref) in
+            self.ref?.child("posts").child("groups").child("current").child(self.groupID!).removeValue { (error, ref) in
                 if error != nil {
                     print("error \(String(describing: error))")
                 }
             }
             //Dismiss the popover
-            presentingViewController?.dismiss(animated: true, completion: nil)
+            self.presentingViewController?.dismiss(animated: true, completion: nil)
         })
     }
     
+    func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath){
+        if indexPath.row < eventTitles.count   {
+            self.performSegue(withIdentifier: "goToEditEvent", sender: self)
+        } else {
+            self.performSegue(withIdentifier: "goToMemberProfile", sender: self)
+        }
+    }
+    
     @IBAction func resourcesButtonTapped(_ sender: Any) {
-        saveGroup(isDraft: true, segueID: "goToResources")
+        saveGroup(isDraft: true)
     }
     
     // dismiss the keyboard when the view is tapped on
@@ -212,5 +196,28 @@ class EditGroupViewController: UIViewController {
         titleTextView.resignFirstResponder()
         descTextView.resignFirstResponder()
     }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        saveGroup(isDraft: true)
+        if segue.identifier == "goToResources" {
+            if let composeResourceViewController = segue.destination as? ComposeResourceViewController {
+                // send appropriate UID to userForLookup variable on Profile View Controller
+                composeResourceViewController.groupID = groupID!
+            }
+        } else if segue.identifier == "goToEditEvent" {
+            if let eventPublishedViewController = segue.destination as? EventPublishedViewController {
+                if !isNewEvent {
+                    // send appropriate event ID to eventID variable on Event Published View Controller
+                    eventPublishedViewController.eventID = eventData[(sender as? UITableViewCell)!.textLabel!.text! as String]
+                }
+            }
+        } else if segue.identifier == "goToMemberProfile" {
+            if let profileViewController = segue.destination as? ProfileViewController {
+                // send appropriate UID to userForLookup variable on Profile View Controller
+                profileViewController.userIDForLookup = memberDetails[user]?[(sender as? UITableViewCell)!.textLabel!.text! as String]
+            }
+        }
+    }
+
     
 }

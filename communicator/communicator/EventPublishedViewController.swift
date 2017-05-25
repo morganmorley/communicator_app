@@ -213,7 +213,6 @@ class EventPublishedViewController: UIViewController {
             if let rosterViewController = segue.destination as? RosterViewController {
                 // send along the appropriate post type (groups or events) and the postId
                 rosterViewController.postID = eventID!
-                rosterViewController.postType = "events"
             }
         }
     }

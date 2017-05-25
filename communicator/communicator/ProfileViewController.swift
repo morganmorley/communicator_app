@@ -20,7 +20,7 @@ class ProfileViewController: UIViewController {
     @IBOutlet weak var postsTextView: UITextView!
     @IBOutlet weak var emailTextView: UILabel!
     
-    var promotedPosts = [String: [String]]()
+    var promotedPosts = [String: [String: String]]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -34,30 +34,24 @@ class ProfileViewController: UIViewController {
                 self.emailTextView.text = email
             }
             //Add in promoted posts
-            self.ref?.child("users").child(self.userIDForLookup!).child("promoted_posts").child("shown").observeSingleEvent(of: .value, with: { (snapshot) in
+            self.ref?.child("user_profiles").child("possible").observeSingleEvent(of: .value, with: { (snapshot) in
                 if let posts = snapshot.value as? Dictionary<String,Dictionary<String,Dictionary<String,String>>> {
                     for (year, promoted) in posts {
-                        self.promotedPosts[year] = []
+                        self.promotedPosts[year] = [:]
                         for (_, post) in promoted {
-                            self.promotedPosts[year]!.append(post["role"]!)
-                            self.promotedPosts[year]!.append(post["name"]!)
+                            self.promotedPosts[year]![post["name"]!] = post["role"]!
                         }
                     }
                     for (year, posts) in self.promotedPosts {
-                        self.emailTextView.text = self.emailTextView.text! + year + "\n"
-                        var counter = 0
-                        for detail in posts {
-                            if(counter % 2) == 0 {
-                                self.emailTextView.text = self.emailTextView.text! + detail + "\t"
-                            } else {
-                                self.emailTextView.text = self.emailTextView.text! + detail + "\n"
-                            }
-                            counter += 1
+                        self.postsTextView.text = self.postsTextView.text + "\n" + year + "\n"
+                        for (name, role) in posts {
+                            self.postsTextView.text = self.postsTextView.text + role + " in "
+                            self.postsTextView.text = self.postsTextView.text + name + "\n"
                         }
                     }
                 }
             })
-
+            
         })
     }
     

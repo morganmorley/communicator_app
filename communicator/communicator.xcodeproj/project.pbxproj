@@ -8,14 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		95420BAB3E6EEEA386C430B4 /* Pods_communicator.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 68EED8B857E7EC633D92444C /* Pods_communicator.framework */; };
-		D70BC1DC1EAD9AAC008DD107 /* GroupStreamViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D70BC1DB1EAD9AAC008DD107 /* GroupStreamViewController.swift */; };
+		D70BC1DC1EAD9AAC008DD107 /* GroupsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D70BC1DB1EAD9AAC008DD107 /* GroupsViewController.swift */; };
 		D70BC1DE1EAD9CB1008DD107 /* EditGroupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D70BC1DD1EAD9CB1008DD107 /* EditGroupViewController.swift */; };
 		D70BC1E01EAD9CEC008DD107 /* GroupPublishedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D70BC1DF1EAD9CEC008DD107 /* GroupPublishedViewController.swift */; };
 		D73B1E991EB6A75F00E61EAD /* EditEventViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D73B1E981EB6A75F00E61EAD /* EditEventViewController.swift */; };
 		D75789BD1ED47A6E001DA5DD /* PublishedResourcesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D75789BC1ED47A6E001DA5DD /* PublishedResourcesViewController.swift */; };
 		D75789BF1ED5C84A001DA5DD /* MemberProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D75789BE1ED5C84A001DA5DD /* MemberProfileViewController.swift */; };
 		D78D02C51E761D3D0007DCB6 /* ComposeResourceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78D02C41E761D3D0007DCB6 /* ComposeResourceViewController.swift */; };
-		D78D02C71E76284A0007DCB6 /* EventStreamViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78D02C61E76284A0007DCB6 /* EventStreamViewController.swift */; };
+		D78D02C71E76284A0007DCB6 /* EventsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78D02C61E76284A0007DCB6 /* EventsViewController.swift */; };
 		D795CB841E80A7DD007D7408 /* ShelfViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D795CB831E80A7DD007D7408 /* ShelfViewController.swift */; };
 		D795CB861E80A8B3007D7408 /* EventPublishedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D795CB851E80A8B3007D7408 /* EventPublishedViewController.swift */; };
 		D79C42A81E76E5BC000C062C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D79C42A61E76E5BC000C062C /* Main.storyboard */; };
@@ -35,14 +35,14 @@
 		29CB1976339ED4B626C7D0C6 /* Pods-communicator.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-communicator.debug.xcconfig"; path = "Pods/Target Support Files/Pods-communicator/Pods-communicator.debug.xcconfig"; sourceTree = "<group>"; };
 		4309602A31FBA3EF0CDE04B2 /* Pods-communicator.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-communicator.release.xcconfig"; path = "Pods/Target Support Files/Pods-communicator/Pods-communicator.release.xcconfig"; sourceTree = "<group>"; };
 		68EED8B857E7EC633D92444C /* Pods_communicator.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_communicator.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		D70BC1DB1EAD9AAC008DD107 /* GroupStreamViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GroupStreamViewController.swift; sourceTree = "<group>"; };
+		D70BC1DB1EAD9AAC008DD107 /* GroupsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GroupsViewController.swift; sourceTree = "<group>"; };
 		D70BC1DD1EAD9CB1008DD107 /* EditGroupViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EditGroupViewController.swift; sourceTree = "<group>"; };
 		D70BC1DF1EAD9CEC008DD107 /* GroupPublishedViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GroupPublishedViewController.swift; sourceTree = "<group>"; };
 		D73B1E981EB6A75F00E61EAD /* EditEventViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EditEventViewController.swift; sourceTree = "<group>"; };
 		D75789BC1ED47A6E001DA5DD /* PublishedResourcesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PublishedResourcesViewController.swift; sourceTree = "<group>"; };
 		D75789BE1ED5C84A001DA5DD /* MemberProfileViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MemberProfileViewController.swift; sourceTree = "<group>"; };
 		D78D02C41E761D3D0007DCB6 /* ComposeResourceViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ComposeResourceViewController.swift; sourceTree = "<group>"; };
-		D78D02C61E76284A0007DCB6 /* EventStreamViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventStreamViewController.swift; sourceTree = "<group>"; };
+		D78D02C61E76284A0007DCB6 /* EventsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventsViewController.swift; sourceTree = "<group>"; };
 		D795CB831E80A7DD007D7408 /* ShelfViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShelfViewController.swift; sourceTree = "<group>"; };
 		D795CB851E80A8B3007D7408 /* EventPublishedViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventPublishedViewController.swift; sourceTree = "<group>"; };
 		D79C42A71E76E5BC000C062C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -112,12 +112,14 @@
 			children = (
 				D7D71C8A1E6D3B5800D5E5A0 /* AppDelegate.swift */,
 				D7D71C8C1E6D3B5900D5E5A0 /* LoginViewController.swift */,
-				D78D02C61E76284A0007DCB6 /* EventStreamViewController.swift */,
-				D70BC1DB1EAD9AAC008DD107 /* GroupStreamViewController.swift */,
+				D78D02C61E76284A0007DCB6 /* EventsViewController.swift */,
+				D70BC1DB1EAD9AAC008DD107 /* GroupsViewController.swift */,
 				D7DD88CF1EAE33F3001CE27C /* GroupEventsStreamViewController.swift */,
 				D78D02C41E761D3D0007DCB6 /* ComposeResourceViewController.swift */,
+				D75789BC1ED47A6E001DA5DD /* PublishedResourcesViewController.swift */,
 				D79C42A91E76E859000C062C /* RosterViewController.swift */,
 				D7FF11B11EA4FCDE0051AD2F /* MyProfileViewController.swift */,
+				D75789BE1ED5C84A001DA5DD /* MemberProfileViewController.swift */,
 				D79C42AB1E77192E000C062C /* ProfileViewController.swift */,
 				D7B82F071EB6A68F0028F3C2 /* SetTimeViewController.swift */,
 				D73B1E981EB6A75F00E61EAD /* EditEventViewController.swift */,
@@ -125,8 +127,6 @@
 				D795CB851E80A8B3007D7408 /* EventPublishedViewController.swift */,
 				D70BC1DF1EAD9CEC008DD107 /* GroupPublishedViewController.swift */,
 				D795CB831E80A7DD007D7408 /* ShelfViewController.swift */,
-				D75789BC1ED47A6E001DA5DD /* PublishedResourcesViewController.swift */,
-				D75789BE1ED5C84A001DA5DD /* MemberProfileViewController.swift */,
 				D79C42A61E76E5BC000C062C /* Main.storyboard */,
 				D7D71C911E6D3B5900D5E5A0 /* Assets.xcassets */,
 				D7D71C931E6D3B5900D5E5A0 /* LaunchScreen.storyboard */,
@@ -266,13 +266,13 @@
 				D75789BF1ED5C84A001DA5DD /* MemberProfileViewController.swift in Sources */,
 				D79C42AC1E77192E000C062C /* ProfileViewController.swift in Sources */,
 				D79C42AA1E76E859000C062C /* RosterViewController.swift in Sources */,
-				D78D02C71E76284A0007DCB6 /* EventStreamViewController.swift in Sources */,
+				D78D02C71E76284A0007DCB6 /* EventsViewController.swift in Sources */,
 				D7B82F081EB6A68F0028F3C2 /* SetTimeViewController.swift in Sources */,
 				D78D02C51E761D3D0007DCB6 /* ComposeResourceViewController.swift in Sources */,
 				D795CB841E80A7DD007D7408 /* ShelfViewController.swift in Sources */,
 				D7D71C8D1E6D3B5900D5E5A0 /* LoginViewController.swift in Sources */,
 				D7D71C8B1E6D3B5900D5E5A0 /* AppDelegate.swift in Sources */,
-				D70BC1DC1EAD9AAC008DD107 /* GroupStreamViewController.swift in Sources */,
+				D70BC1DC1EAD9AAC008DD107 /* GroupsViewController.swift in Sources */,
 				D70BC1E01EAD9CEC008DD107 /* GroupPublishedViewController.swift in Sources */,
 				D70BC1DE1EAD9CB1008DD107 /* EditGroupViewController.swift in Sources */,
 				D795CB861E80A8B3007D7408 /* EventPublishedViewController.swift in Sources */,

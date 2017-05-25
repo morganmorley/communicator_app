@@ -110,12 +110,6 @@ class GroupPublishedViewController: UIViewController {
                 // send appropriate UID to userForLookup variable on Profile View Controller
                 profileViewController.userIDForLookup = adminID!
             }
-        } else if segue.identifier == "goToRoster" {
-            if let rosterViewController = segue.destination as? RosterViewController {
-                // send along the appropriate post type (groups or events) and the postId
-                rosterViewController.postID = groupID!
-                rosterViewController.postType = "groups"
-            }
         }
     }
 

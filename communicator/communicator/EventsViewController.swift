@@ -10,13 +10,15 @@ import UIKit
 import FirebaseDatabase
 import FirebaseAuth
 
-class EventStreamViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class EventsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var ref: FIRDatabaseReference?
-    
-    // titles of the events to be posted to the Stream:
-    var postData = [String: String]()
-    var postTitles = [String] ()
+    var eventsRef: FIRDatabaseReference?
+
+    // titles of events to be posted to the shelf and stream:
+    var eventData = [String: String]()
+    var eventTitles = [[String]]()
+    let headerTitles = ["Happening Now", "Shelf", "Stream"]
 
     @IBOutlet weak var tableView: UITableView!
     
@@ -51,7 +53,7 @@ class EventStreamViewController: UIViewController, UITableViewDelegate, UITableV
             return true
         }
         // remove post from database and all references to it
-        ref?.child("posts").child("events").child(event).removeValue()
+        ref?.child("events").child(event).removeValue()
         ref?.child("users").observeSingleEvent(of: .value, with: { (snapshot) in
             if let users = snapshot.value as? Dictionary<String,Dictionary<String,Dictionary<String,String>>> {
                 for (user, data) in users {
@@ -76,45 +78,44 @@ class EventStreamViewController: UIViewController, UITableViewDelegate, UITableV
         // Set the firebase database reference:
         ref = FIRDatabase.database().reference()
         let userID = FIRAuth.auth()?.currentUser?.uid
-        let eventsRef = ref?.child("posts").child("events")
+        eventsRef = ref?.child("posts").child("events")
         let userRef = ref?.child("users").child(userID!)
-
-        // post all events that are in the database
-        eventsRef?.observeSingleEvent(of: .value, with: { (snapshot) in
-            if let posts = snapshot.value as? Dictionary<String,Dictionary<String,Dictionary<String,String>>> {
-                for (eventID, data) in posts {
-                    // check date against current date incase deletion
-                    if let dateTime = data["details"]?["date_time"] {
-                        if self.compareDateTime(with: dateTime, event: eventID) {
-                            if let eventTitle = data["details"]?["title"] {
-                                self.postData[eventTitle] = eventID
-                                self.postTitles.append(eventTitle)
-                            }
-                        }
-                    }
+        
+        //post about events on your shelf that are happening now:
+        userRef?.child("linked_events").observeSingleEvent(of: .value, with: { (snapshot) in
+            if let shelfEvents = snapshot.value as? Dictionary<String,String> {
+                for (shelfEventID, shelfEventName) in shelfEvents {
+                    //if event is happening after now
+                    self.eventTitles[0].append(shelfEventName)
+                    //else:
+                        //self.eventTitles[1].append(shelfEventName)
+                    self.eventData[shelfEventName] = shelfEventID
+                    // Reload the tableView
+                    self.tableView.reloadData()
                 }
             }
+            // post all events that are in the database
+            self.eventsRef?.observeSingleEvent(of: .value, with: { (snapshot) in
+                if let streamEvents = snapshot.value as? Dictionary<String,Dictionary<String,Dictionary<String,String>>> {
+                    for (eventID, data) in streamEvents {
+                        // check date against current date incase deletion
+                        //if let dateTime = data["details"]?["date_time"] {
+                            //if self.compareDateTime(with: dateTime, event: eventID) {
+                                if let eventTitle = data["details"]?["title"] {
+                                    if self.eventData[eventTitle] == nil {  // take shelved groups out of the stream.
+                                        self.eventData[eventTitle] = eventID
+                                        self.eventTitles[2].append(eventTitle)
+                                        // Reload the tableView
+                                        self.tableView.reloadData()
+                                    }
+                                }
+                            //}
+                        //}
+                    }
+                }
+            })
         })
         
-        // get rid of posts that are also in your shelf
-        userRef?.child("linked_events").observeSingleEvent(of: .value, with: { (snapshot) in
-            if let events = snapshot.value as? Dictionary<String,String> {
-                for (shelfEventID, _) in events {
-                    for (eventTitle, streamEventID) in self.postData {
-                        if streamEventID == shelfEventID {
-                            self.postData.removeValue(forKey: eventTitle)
-                            func delete(element: String, list: Array<String>) -> Array<String> {
-                                let newList = list.filter({ $0 != element })
-                                return newList
-                            }
-                            self.postTitles = delete(element: eventTitle, list: self.postTitles)
-                            // Reload the tableView
-                            self.tableView.reloadData()
-                        }
-                    }
-                }
-            }
-        })
     }
 
     override func didReceiveMemoryWarning() {
@@ -122,15 +123,24 @@ class EventStreamViewController: UIViewController, UITableViewDelegate, UITableV
         // Dispose of any resources that can be recreated.
     }
     
+    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+        return eventTitles.count
+    }
+    
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        if section < headerTitles.count { return headerTitles[section] }
+        return nil
+    }
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // number of cells needed
-        return postTitles.count
+        return eventTitles[section].count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         // add a cell
         let cell = tableView.dequeueReusableCell(withIdentifier: "PostCell")
-        cell?.textLabel?.text = postTitles[indexPath.row]
+        cell?.textLabel?.text = eventTitles[indexPath.section][indexPath.row]
         return cell!
     }
     
@@ -138,7 +148,7 @@ class EventStreamViewController: UIViewController, UITableViewDelegate, UITableV
         if segue.identifier == "goToEvent" {
             if let eventPublishedViewController = segue.destination as? EventPublishedViewController {
                 // send appropriate event ID to eventID variable on Event Published View Controller
-                eventPublishedViewController.eventID = postData[(sender as? UITableViewCell)!.textLabel!.text! as String]
+                eventPublishedViewController.eventID = eventData[(sender as? UITableViewCell)!.textLabel!.text! as String]
             }
         }
     }

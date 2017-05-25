@@ -19,10 +19,13 @@ class PublishedResourcesViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         ref = FIRDatabase.database().reference()
-        ref?.child("posts").child("groups").child("current").child(groupID!).child("resources").observeSingleEvent(of: .value, with: { (snapshot) in
-            let resources = snapshot.value as? String
-            self.textView.text = resources
-        })
+        
+        if groupID != nil {
+            ref?.child("groups").child("current").child(groupID!).child("resources").observeSingleEvent(of: .value, with: { (snapshot) in
+                let resources = snapshot.value as? String
+                self.textView.text = resources ?? ""
+            })
+        }
 
     }
 

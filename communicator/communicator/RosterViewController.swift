@@ -13,7 +13,6 @@ class RosterViewController: UIViewController, UITableViewDelegate, UITableViewDa
 
     var ref: FIRDatabaseReference?
     var postID: String?
-    var postType: String?
     var userData = [String:String]()
     var usernames = [String]()
     
@@ -28,23 +27,25 @@ class RosterViewController: UIViewController, UITableViewDelegate, UITableViewDa
         // Set the firebase database reference:
         ref = FIRDatabase.database().reference()
         
-        // Retrieve posts for the stream and listen for changes from the database:
-        ref?.child("posts").child(postType!).child(postID!).child("linked_users").observeSingleEvent(of: .value, with: { (snapshot) in
-            if let users = snapshot.value as? Dictionary<String, String> {
-                for (userID, role) in users {
-                    if role == "rsvp" {
-                        self.ref?.child("users").child(userID).child("details").child("username").observeSingleEvent(of: .value, with: { (snapshot) in
-                            if let value = snapshot.value as? String {
-                                self.userData[value] = userID
-                                self.usernames.append(value)
-                                // Reload the tableView
-                                self.tableView.reloadData()
-                            }
-                        })
+        // Retrieve usernames and userIDs:
+        if let eventID = postID {
+            ref?.child("events").child("current").child(eventID).child("linked_users").observeSingleEvent(of: .value, with: { (snapshot) in
+                if let users = snapshot.value as? Dictionary<String, String> {
+                    for (userID, role) in users {
+                        if role == "rsvp" {
+                            self.ref?.child("user_details").child(userID).child("details").child("username").observeSingleEvent(of: .value, with: { (snapshot) in
+                                if let username = snapshot.value as? String {
+                                    self.userData[username] = userID
+                                    self.usernames.append(username)
+                                    // Reload the tableView
+                                    self.tableView.reloadData()
+                                }
+                            })
+                        }
                     }
                 }
-            }
-        })
+            })
+        }
         
     }
 
@@ -68,7 +69,7 @@ class RosterViewController: UIViewController, UITableViewDelegate, UITableViewDa
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "goToProfile" {
             if let profileViewController = segue.destination as? ProfileViewController {
-                // send appropriate username to userIDForLookup variable on Profile View Controller
+                // send appropriate user ID to userIDForLookup variable on Profile View Controller
                 profileViewController.userIDForLookup = userData[((sender as? UITableViewCell)?.textLabel?.text)!]
             }
         }
