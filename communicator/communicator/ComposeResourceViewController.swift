@@ -18,33 +18,38 @@ class ComposeResourceViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
         ref = FIRDatabase.database().reference()
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
     
     @IBAction func savePost(_ sender: Any) {
         //Post the data to firebase
         let resourceText = textView.text
-        if groupID != nil { // checks if inserted an empty title
+        if groupID != nil {
             ref?.child("groups").child("drafts").child(groupID!).child("details").child("resources").setValue(resourceText ?? "")
             //Dismiss the popover
-            presentingViewController?.dismiss(animated: true, completion: nil)
+            self.performSegue(withIdentifier: "goToEditGroup", sender: self)
         }
     }
     
-    @IBAction func cancelPost(_ sender: Any) {
-        //Dismiss the popover
-        presentingViewController?.dismiss(animated: true, completion: nil)
+    @IBAction func cancelPost(_ sender: Any) {        self.performSegue(withIdentifier: "goToEditGroup", sender: self)
+
     }
     
     // dismiss the keyboard when the view is tapped on
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         textView.resignFirstResponder()
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "goToEditGroup" {
+            if let editGroupViewController = segue.destination as? EditGroupViewController {
+                editGroupViewController.groupID = groupID!
+            }
+        }
     }
 
 }

@@ -132,7 +132,7 @@ class EditGroupViewController: UIViewController, UITableViewDelegate, UITableVie
                 //Dismiss the popover
                 self.presentingViewController?.dismiss(animated: true, completion: nil)
             } else {
-                self.performSegue(withIdentifier: segueID, sender: self)
+                self.performSegue(withIdentifier: "goToStream", sender: self)
             }
         }
     }
@@ -145,7 +145,7 @@ class EditGroupViewController: UIViewController, UITableViewDelegate, UITableVie
         //delete any saved content in events/drafts
         self.ref?.child("groups").child("drafts").child(self.groupID!).removeValue ()
         //Dismiss the popover
-        presentingViewController?.dismiss(animated: true, completion: nil)
+        self.performSegue(withIdentifier: "goToStream", sender: self)
     }
     
 

@@ -19,8 +19,6 @@ class SetTimeViewController: UIViewController {
     @IBOutlet weak var startDateTimeSetter: UIDatePicker!
     @IBOutlet weak var endDateTimeSetter: UIDatePicker!
     
-    var pastViewController: EditEventViewController?
-    
     var startDateTime: String = ""
     var endDateTime: String = ""
 
@@ -37,22 +35,30 @@ class SetTimeViewController: UIViewController {
     }
     
     @IBAction func saveTimes(_ sender: Any) {
-        //eventRef?.child("details").child("start_datetime").setValue(startDateTime)
-        //eventRef?.child("details").child("end_datetime").setValue(endDateTime)
+        eventRef?.child("details").child("start_datetime").setValue(startDateTime)
+        eventRef?.child("details").child("end_datetime").setValue(endDateTime)
         //Dismiss the popover
-        presentingViewController?.dismiss(animated: true, completion: nil)
+        self.performSegue(withIdentifier: "goToEditEvent", sender: self)
     }
     
     @IBAction func startSetterChanged(_ sender: Any) {
         //set date and time for storage
-        pastViewController!.startTimeLabel.text =  DateFormatter.localizedString(from: startDateTimeSetter.date, dateStyle:
+        startDateTime =  DateFormatter.localizedString(from: startDateTimeSetter.date, dateStyle:
             DateFormatter.Style.full, timeStyle: DateFormatter.Style.short)
     }
     
     @IBAction func endSetterChanged(_ sender: Any) {
         //set date and time for storage
-        pastViewController!.endTimeLabel.text =  DateFormatter.localizedString(from: endDateTimeSetter.date, dateStyle:
+        endDateTime =  DateFormatter.localizedString(from: endDateTimeSetter.date, dateStyle:
             DateFormatter.Style.full, timeStyle: DateFormatter.Style.short)
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "goToEditEvent" {
+            if let editEventViewController = segue.destination as? EditEventViewController {
+                editEventViewController.eventID = eventIDForLookup!
+            }
+        }
     }
 
 }

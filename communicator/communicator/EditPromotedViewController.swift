@@ -77,7 +77,7 @@ class EditPromotedViewController: UIViewController {
             self.ref?.child("user_profiles").child(userID!).child("current").child(year!).child(postID!).removeValue()
         }
         //Dismiss the popover
-        presentingViewController?.dismiss(animated: true, completion: nil)
+        self.performSegue(withIdentifier: "goToProfile", sender: self)
 
     }
 

@@ -107,11 +107,11 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     }
     
     @IBAction func addGroup(_ sender: Any) {
-        self.present(EditGroupViewController(), animated: true, completion: nil)
-
+        self.performSegue(withIdentifier: "goToEditGroup", sender: self)
     }
+
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "goToGroup" {
+        if segue.identifier == "goToPublishedGroup" {
             if let groupPublishedViewController = segue.destination as? GroupPublishedViewController {
                 // send appropriate group ID to groupID variable on Group Published View Controller
                 groupPublishedViewController.groupID = groupData[(sender as? UITableViewCell)!.textLabel!.text! as String]

@@ -17,6 +17,8 @@ class EditEventViewController: UIViewController {
     var groupID: String?
     var eventID: String?
     
+    var fromGroup: Bool?
+    
     @IBOutlet weak var locationApprovedButton: UIButton!
     @IBOutlet weak var locationTextField: UITextField!
     @IBOutlet weak var titleTextField: UITextField!
@@ -57,6 +59,9 @@ class EditEventViewController: UIViewController {
             groupID = ""
             startTimeLabel.text = DateFormatter.localizedString(from: Date(), dateStyle: DateFormatter.Style.full, timeStyle: DateFormatter.Style.short)
             endTimeLabel.text = DateFormatter.localizedString(from: Date(), dateStyle: DateFormatter.Style.full, timeStyle: DateFormatter.Style.short)
+        }
+        if fromGroup == nil {
+            fromGroup = false
         }
 
     }
@@ -166,7 +171,12 @@ class EditEventViewController: UIViewController {
                     }
                 }
                 //Dismiss the popover
-                self.presentingViewController?.dismiss(animated: true, completion: nil)
+                if fromGroup! {
+                    self.performSegue(withIdentifier: "goToEditGroup", sender: self)
+                    
+                } else {
+                    self.performSegue(withIdentifier: "goToPublishedEvent", sender: self)
+                }
             }
         }
     }
@@ -186,7 +196,12 @@ class EditEventViewController: UIViewController {
             }
         }
         //Dismiss the popover
-        presentingViewController?.dismiss(animated: true, completion: nil)
+        if fromGroup! {
+            self.performSegue(withIdentifier: "goToEditGroup", sender: self)
+            
+        } else {
+            self.performSegue(withIdentifier: "goToStream", sender: self)
+        }
     }
     
     @IBAction func rsvpButtonTapped(_ sender: Any) {
@@ -230,7 +245,12 @@ class EditEventViewController: UIViewController {
                 }
             }
             //Dismiss the popover
-            self.presentingViewController?.dismiss(animated: true, completion: nil)
+            if self.fromGroup! {
+                self.performSegue(withIdentifier: "goToEditGroup", sender: self)
+
+            } else {
+                self.performSegue(withIdentifier: "goToStream", sender: self)
+            }
         })
 
     }
@@ -244,7 +264,18 @@ class EditEventViewController: UIViewController {
             if let setTimeViewController = segue.destination as? SetTimeViewController {
                 //send appropriate eventID for saving the time on Set Tiime View Controller
                 setTimeViewController.eventIDForLookup = eventID!
-                setTimeViewController.pastViewController = self
+            }
+        }
+        if segue.identifier == "goToEditGroup" {
+            if let editGroupViewController = segue.destination as? EditGroupViewController {
+                //send appropriate eventID for saving the time on Set Tiime View Controller
+                editGroupViewController.groupID = groupID!
+            }
+        }
+        if segue.identifier == "goToPublishedEvent" {
+            if let eventPublishedViewController = segue.destination as? EventPublishedViewController {
+                //send appropriate eventID for saving the time on Set Tiime View Controller
+                eventPublishedViewController.eventID = eventID!
             }
         }
     }

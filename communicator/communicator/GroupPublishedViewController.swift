@@ -103,13 +103,12 @@ class GroupPublishedViewController:  UIViewController, UITableViewDelegate, UITa
             groupRef?.child("linked_users").child(userID!).setValue("member")
             let promotedPost = ["post_name": titleTextView.text as String, "role": "member"]
             ref?.child("user_profiles").child(userID!).child("possible").child("2017").child(groupID!).setValue(promotedPost)
-            //TODO - ERROR HANDLING - and dynamic year
         }
     }
 
     @IBAction func bottomButtonTapped(_ sender: Any) {
         if isAdmin {
-            self.present(EditGroupViewController(), animated: true, completion: nil)
+            self.performSegue(withIdentifier: "goToEditGroup", sender: self)
         } else {
             userRef?.child("linked_groups").child(groupID!).removeValue()
             groupRef?.child("linked_users").child(userID!).removeValue()

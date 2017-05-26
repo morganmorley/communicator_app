@@ -168,6 +168,10 @@ class EventsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         return nil
     }
     
+    @IBAction func addEvent(_ sender: Any) {
+        self.performSegue(withIdentifier: "goToEditEvent", sender: self)
+    }
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // number of cells needed
         if numberOfSectionsInTableView(tableView: tableView) == 0 {

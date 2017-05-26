@@ -54,7 +54,7 @@ class MemberProfileViewController: UIViewController {
         if let groupID = groupIDForLookup, let userID = userIDForLookup {
             ref?.child("groups").child("drafts").child(groupID).child(userID).setValue(groupRoleTextView.text ?? "")
             //Dismiss the popover
-            presentingViewController?.dismiss(animated: true, completion: nil)
+            self.performSegue(withIdentifier: "goToEditEvent", sender: self)
         }
     }
     
@@ -65,6 +65,15 @@ class MemberProfileViewController: UIViewController {
     // dismiss the keyboard when the view is tapped on
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         groupRoleTextView.resignFirstResponder()
+    }
+    
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "goToEditGroup" {
+            if let editGroupViewController = segue.destination as? EditGroupViewController {
+                editGroupViewController.groupID = groupIDForLookup!
+            }
+        }
     }
     
 }
