@@ -25,14 +25,14 @@ class ProfileViewController: UIViewController {
         // Do any additional setup after loading the view.
         ref = FIRDatabase.database().reference()
         // retrieve the email and text labels for the appropriate username clicked in roster:
-        ref?.child("users").child(userIDForLookup!).child("details").observeSingleEvent(of: .value, with: { (snapshot) in
+        ref?.child("user_details").child(userIDForLookup!).child("details").observeSingleEvent(of: .value, with: { (snapshot) in
             let details = snapshot.value as? Dictionary<String,String>
             if let email = details?["email"], let username = details?["username"] {
                 self.usernameTextView.text = username
                 self.emailTextView.text = email
             }
             //Add in promoted posts
-            self.ref?.child("user_profiles").child("possible").observeSingleEvent(of: .value, with: { (snapshot) in
+            self.ref?.child("user_profiles").child(self.userIDForLookup!).child("current").observeSingleEvent(of: .value, with: { (snapshot) in
                 if let posts = snapshot.value as? Dictionary<String,Dictionary<String,Dictionary<String,String>>> {
                     for (year, promoted) in posts {
                         self.postsTextView.text = self.postsTextView.text + "\n" + year + "\n"

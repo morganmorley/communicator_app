@@ -17,17 +17,17 @@ class EditEventViewController: UIViewController {
     var groupID: String?
     var eventID: String?
     
-    @IBOutlet weak var titleTextView: UITextView!
-    @IBOutlet weak var endTimeTextView: UITextView!
-    @IBOutlet weak var startTimeTextView: UITextView!
+    @IBOutlet weak var locationApprovedButton: UIButton!
+    @IBOutlet weak var locationTextField: UITextField!
+    @IBOutlet weak var titleTextField: UITextField!
+    @IBOutlet weak var descriptionTextView: UITextView!
+    @IBOutlet weak var startTimeLabel: UILabel!
+    @IBOutlet weak var endTimeLabel: UILabel!
     @IBOutlet weak var editTimesButton: UIButton!
-    @IBOutlet weak var placeApprovedButton: UIButton!
-    @IBOutlet weak var descTextView: UITextView!
-    
-    @IBOutlet weak var locationTextView: UITextView!
     @IBOutlet weak var rsvpButton: UIButton!
     
     var rsvpEnabled = false
+    var isApproved = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -39,7 +39,7 @@ class EditEventViewController: UIViewController {
                     self.ref?.child("events").child("drafts").child(event).observeSingleEvent(of: .value, with: { (snapshot) in
                         if let value = snapshot.value as? Dictionary<String,Dictionary<String,String>> {
                             self.populate(with: value)
-                            self.eventRef = self.ref?.child("groups").child("drafts").child(event)
+                            self.eventRef = self.ref?.child("events").child("drafts").child(event)
                         }
                     })
                 } else {
@@ -54,106 +54,128 @@ class EditEventViewController: UIViewController {
         } else {
             eventRef = ref?.child("events").child("drafts").childByAutoId()
             eventID = eventRef!.key as String
-            //TODO - POPULATE SOME FIELDS (DATETIME, GROUPID)
+            groupID = ""
+            startTimeLabel.text = DateFormatter.localizedString(from: Date(), dateStyle: DateFormatter.Style.full, timeStyle: DateFormatter.Style.short)
+            endTimeLabel.text = DateFormatter.localizedString(from: Date(), dateStyle: DateFormatter.Style.full, timeStyle: DateFormatter.Style.short)
         }
 
     }
     
     func populate(with value: [String: [String: String]]) {
-        self.titleTextView.text = value["details"]?["title"] ?? ""
-        self.descTextView.text = value["details"]?["desc"] ?? ""
+        self.titleTextField.text = value["details"]?["title"] ?? ""
+        self.descriptionTextView.text = value["details"]?["desc"] ?? ""
         if self.groupID == nil {
             self.groupID = value["details"]?["group"] ?? ""
         }
-        if Bool((value["details"]?["rsvp"])!)! {
+        if value["details"]?["rsvp"]! == "true" {
             rsvpButton.setTitle("Remove RSVP Option", for: .normal)
         }
         let datetime = DateFormatter.localizedString(from: Date(), dateStyle: DateFormatter.Style.full, timeStyle: DateFormatter.Style.short)
-        startTimeTextView.text = datetime
-        endTimeTextView.text = datetime
+        startTimeLabel.text = datetime
+        endTimeLabel.text = datetime
     }
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
     
+    func stringToDate(_ dateTime: String) -> Date {
+        //Splits dateTime strings into discreet units for comparison
+        var dateFromFirebase = DateComponents()
+        let months = ["January": 1, "February": 2, "March": 3, "April": 4, "May": 5, "June": 6, "July": 7, "August": 8, "September": 9, "October": 10, "November": 11, "December": 12]
+        let splitInput = dateTime.components(separatedBy: " at ")
+        let date = splitInput[0].components(separatedBy: ", ")
+        let monthAndDay = date[1].components(separatedBy: " ")
+        let wholeTime = splitInput[1].components(separatedBy: " ")
+        var hourAndMinute = wholeTime[0].components(separatedBy: ":")
+        
+        //Fill the dateFromFirebase
+        dateFromFirebase.month = months[monthAndDay[0]]
+        dateFromFirebase.day = Int(monthAndDay[1])
+        dateFromFirebase.year = Int(date[2])
+        if wholeTime[1] == "PM" {
+            dateFromFirebase.hour = Int(hourAndMinute[0])! + 12 + 1 //for end time
+        } else {
+            dateFromFirebase.hour = Int(hourAndMinute[0])! + 1 //for end time
+        }
+        dateFromFirebase.minute = Int(hourAndMinute[1])
+        
+        //Turn back into date and return
+        let dateFromComponents = Calendar.current.date(from: dateFromFirebase)!
+        return dateFromComponents
+    }
+    
+    func gatherDetails() -> Dictionary<String,String> {
+        var eventDetails = Dictionary<String,String>()
+        eventDetails["title"] = titleTextField.text ?? ""
+        eventDetails["desc"] = descriptionTextView.text ?? ""
+        eventDetails["start_datetime"] = startTimeLabel.text ??  DateFormatter.localizedString(from: Date(), dateStyle: DateFormatter.Style.full, timeStyle: DateFormatter.Style.short)
+        eventDetails["end_datetime"] = endTimeLabel.text ??  DateFormatter.localizedString(from: Date(), dateStyle: DateFormatter.Style.full, timeStyle: DateFormatter.Style.short)
+        eventDetails["rsvp"] = String(rsvpEnabled)
+        eventDetails["groupID"] = groupID ?? ""
+        eventDetails["location"] = locationTextField.text ?? ""
+        return eventDetails
+    }
+
     func saveEvent(isDraft: Bool) {
         var status = ""
         if isDraft {
-            status = "draft"
+            status = "drafts"
         } else {
             status = "current"
         }
+        
+        let eventDetails = gatherDetails()
+        if eventDetails["title"] == "" { return }
+
         //Post the data to firebase
         if let userID = FIRAuth.auth()?.currentUser?.uid {
-            if let event = eventID {
-                // gather event details
-                var eventDetails = Dictionary<String,String>()
-                eventDetails["title"] = titleTextView.text ?? ""
-                eventDetails["desc"] = titleTextView.text ?? ""
-                eventDetails["start_datetime"] = startTimeTextView.text ??  DateFormatter.localizedString(from: Date(), dateStyle: DateFormatter.Style.full, timeStyle: DateFormatter.Style.short)
-                eventDetails["end_datetime"] = endTimeTextView.text ??  DateFormatter.localizedString(from: Date(), dateStyle: DateFormatter.Style.full, timeStyle: DateFormatter.Style.short)
-                eventDetails["rsvp"] = String(rsvpEnabled)
-                eventDetails["groupID"] = groupID
-                eventDetails["location"] = locationTextView.text ?? ""
-                
-                //TODO - CHECK FOR ACCURATE TIMES
-                
-                // post details to the database
-                ref?.child("events").child(status).observeSingleEvent(of: .value, with: { (snapshot) in
-                    if snapshot.hasChild(event){
-                        self.ref?.child("events").child(status).child(event).setValue(["details": eventDetails])
-                        self.ref?.child("events").child(status).child(event).child("linked_users").child(userID).setValue("admin")
-                        if !isDraft {
-                            //save group in promoted posts as it's published.
-                            let calendar = Calendar.current
-                            let year = String(calendar.component(.year, from: Date()))
-                            let postDetails = [year: [event: ["name": self.titleTextView.text, "role": "admin"]]]
-                            self.ref?.child("user_profiles").child(userID).child("hidden").child(year).observeSingleEvent(of: .value, with: { (snapshot) in
-                                if !snapshot.hasChild(event) {
-                                    self.ref?.child("user_profiles").child(userID).child("current").child(year).observeSingleEvent(of: .value, with: { (snapshot) in
-                                        if !snapshot.hasChild(event) {
-                                            self.ref?.child("user_profiles").child(userID).child("possible").child(year).child(event).setValue(postDetails)
-                                        } else {
-                                            self.ref?.child("user_profiles").child(userID).child("current").child(year).child(event).setValue(postDetails)
-                                        }
-                                    })
-
-                                }
-                            })
-                        }
-                    }else{
-                        let adminDict = [userID: "admin"]
-                        self.ref?.child("groups").child(status).setValue(["details": eventDetails, "linked_users": adminDict])
+            if isDraft {
+                self.ref?.child("events").child(status).child(self.eventID!).setValue(["details": eventDetails])
+                self.ref?.child("events").child(status).child(self.eventID!).child("linked_users").child(userID).setValue("admin")
+            } else {
+                if (self.stringToDate(eventDetails["start_datetime"]!) < self.stringToDate(eventDetails["end_datetime"]!)) {
+                    if (Date() < self.stringToDate(eventDetails["end_datetime"]!)) {
+                        self.ref?.child("events").child(status).child(self.eventID!).setValue(["details": eventDetails])
+                        self.ref?.child("events").child(status).child(self.eventID!).child("linked_users").child(userID).setValue("admin")
                     }
-                    self.ref?.child("user_details").child(userID).child("linked_events").child(event).setValue(eventDetails["title"])
-                    if !isDraft {
-                        //delete draft content as its being published
-                        self.ref?.child("events").child("drafts").child(event).removeValue { (error, ref) in
-                            if error != nil {
-                                print("error \(String(describing: error))")
-                            }
-                        }
-                        //Dismiss the popover
-                        self.presentingViewController?.dismiss(animated: true, completion: nil)
+                }
+            }
+            self.ref?.child("user_details").child(userID).child("linked_events").child(self.eventID!).setValue(eventDetails["title"])
+            if self.groupID != "" {
+                self.ref?.child("groups").child("drafts").child(self.groupID!).child("linked_events").child(self.eventID!).setValue(eventDetails["title"])
+            }
+            if !isDraft {
+                //save group in promoted posts as it's published.
+                let calendar = Calendar.current
+                let year = String(calendar.component(.year, from: self.stringToDate(eventDetails["start_datetime"]!)))
+                let postDetails = [year: [self.eventID!: ["name": self.titleTextField.text as? String ?? "", "role": "admin"]]]
+                self.ref?.child("user_profiles").child(userID).child("current").child(year).observeSingleEvent(of: .value, with: { (snapshot) in
+                    if !snapshot.hasChild(self.eventID!) {
+                        self.ref?.child("user_profiles").child(userID).child("possible").setValue(postDetails)
+                    } else {
+                        self.ref?.child("user_profiles").child(userID).child("current").setValue(postDetails)
+                        self.ref?.child("user_profiles").child(userID).child("possible").setValue(postDetails)
                     }
-                    if self.groupID != "" {
-                        self.ref?.child("groups").child("drafts").child(self.groupID!).child("linked_events").observeSingleEvent(of: .value, with: { (snapshot) in
-                            if !snapshot.hasChild(event) {
-                                self.ref?.child("groups").child("drafts").child(self.groupID!).child("linked_events").child(event).setValue(eventDetails["title"])
-                            } else {
-                                self.ref?.child("groups").child("current").child(self.groupID!).child("linked_events").child(event).setValue(eventDetails["title"])
-                            }
-                        })
-                    }
+                            
                 })
+                //delete draft content as its being published
+                self.ref?.child("events").child("drafts").child(self.eventID!).removeValue { (error, ref) in
+                    if error != nil {
+                        print("error \(String(describing: error))")
+                    }
+                }
+                //Dismiss the popover
+                self.presentingViewController?.dismiss(animated: true, completion: nil)
             }
         }
     }
 
     
     @IBAction func savePost(_ sender: Any) {
-        saveEvent(isDraft: false)
+        if isApproved {
+            saveEvent(isDraft: false)
+        }
     }
     
     @IBAction func cancelPost(_ sender: Any) {
@@ -207,8 +229,14 @@ class EditEventViewController: UIViewController {
                     }
                 }
             }
+            //Dismiss the popover
+            self.presentingViewController?.dismiss(animated: true, completion: nil)
         })
 
+    }
+    @IBAction func locationApproved(_ sender: Any) {
+        isApproved = true
+        locationApprovedButton.isHidden = true
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -216,15 +244,16 @@ class EditEventViewController: UIViewController {
             if let setTimeViewController = segue.destination as? SetTimeViewController {
                 //send appropriate eventID for saving the time on Set Tiime View Controller
                 setTimeViewController.eventIDForLookup = eventID!
+                setTimeViewController.pastViewController = self
             }
         }
     }
     
     // dismiss the keyboard when the view is tapped on
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        titleTextView.resignFirstResponder()
-        descTextView.resignFirstResponder()
-        locationTextView.resignFirstResponder()
+        titleTextField.resignFirstResponder()
+        descriptionTextView.resignFirstResponder()
+        locationTextField.resignFirstResponder()
     }
     
 }

@@ -56,7 +56,7 @@ class EventPublishedViewController: UIViewController {
                         }
                     })
                     //set admin view
-                    if ((self.adminID == self.userID) || (self.userID == "ADMIN")) {
+                    if (self.adminID == self.userID) {
                         self.isAdmin = true
                         self.shelfEditButton.title = "Edit" // eventually will turn into edit button and be false
                         self.rsvpButton.setTitle("RSVP List",for: .normal)
@@ -71,53 +71,6 @@ class EventPublishedViewController: UIViewController {
             self.setLabels()
         })
     }
-    
-    func splitDateTime(from dateTime: String) -> DateComponents {
-        //Splits dateTime strings into discreet units for comparison
-        var dateFromFirebase = DateComponents()
-        let months = ["January": 1, "February": 2, "March": 3, "April": 4, "May": 5, "June": 6, "July": 7, "August": 8, "September": 9, "October": 10, "November": 11, "December": 12]
-        let splitInput = dateTime.components(separatedBy: " at ")
-        let date = splitInput[0].components(separatedBy: ", ")
-        let monthAndDay = date[1].components(separatedBy: " ")
-        let wholeTime = splitInput[1].components(separatedBy: " ")
-        var hourAndMinute = wholeTime[0].components(separatedBy: ":")
-        
-        //Fill the dateFromFirebase
-        dateFromFirebase.month = months[monthAndDay[0]]
-        dateFromFirebase.day = Int(monthAndDay[1])
-        dateFromFirebase.year = Int(date[2])
-        if wholeTime[1] == "PM" {
-            dateFromFirebase.hour = Int(hourAndMinute[0])! + 12 + 1 //for end time
-        } else {
-            dateFromFirebase.hour = Int(hourAndMinute[0])! + 1 //for end time
-        }
-        dateFromFirebase.minute = Int(hourAndMinute[1])
-        
-        return dateFromFirebase
-    }
-    
-    func compareDateTime(with dateTime: String, event: String) -> Bool {
-        // Checks that an event is either currently happening or has yet to happen. If not, it deletes the event from the database.
-        let dateFromComponents = Calendar.current.date(from: splitDateTime(from: dateTime))!
-        if Date() < dateFromComponents {
-            return true
-        }
-        // remove post from database and all references to it
-        ref?.child("events").child(event).removeValue()
-        ref?.child("users").observeSingleEvent(of: .value, with: { (snapshot) in
-            if let users = snapshot.value as? Dictionary<String,Dictionary<String,Dictionary<String,String>>> {
-                for (user, data) in users {
-                    for (eventID, _) in data["linked_events"]! {
-                        if eventID == event {
-                            self.ref?.child("users").child(user).child("linked_events").child(eventID).removeValue()
-                        }
-                    }
-                }
-            }
-        })
-        return false
-    }
-
     
     func divideDatetimes(start: String, end: String) {
         //Splits datetime strings into discreet units for publishing
@@ -135,6 +88,10 @@ class EventPublishedViewController: UIViewController {
             self.endMonthYearTextView.text = endMonthAndDay[0] + " " + endDate[2]
             self.endDayTextView.text = endDate[0]
             self.endDateTextView.text = endMonthAndDay[1]
+        } else {
+            self.endMonthYearTextView.isHidden = true
+            self.endDayTextView.isHidden = true
+            self.endDateTextView.isHidden = true
         }
         let endWholeTime = endSplitInput[1]
         self.startToEndTimeTextView.text = startWholeTime + " to " + endWholeTime
@@ -148,7 +105,10 @@ class EventPublishedViewController: UIViewController {
                 self.titleTextView.text = eventDetails["title"]!
                 self.locationTextView.text = eventDetails["location"]!
                 self.descTextView.text = eventDetails["desc"]!
-                if ((eventDetails["rsvp"]! == "true") && (!self.isAdmin)) {
+                if (eventDetails["rsvp"]! == "true") {
+                    self.rsvpButton.isHidden = false
+                }
+                if !self.isAdmin {
                     self.rsvpButton.setTitle("RSVP", for: .normal)
                 }
                 // set rsvp label and button; set addDeleteButton title
@@ -238,7 +198,7 @@ class EventPublishedViewController: UIViewController {
     }
     
     @IBAction func shelfEditButtonTapped(_ sender: Any) {
-        if ((userID != adminID) && (userID != "ADMIN")) {
+        if !isAdmin {
             shelf = !shelf
             changeShelfSettings(button: 1)
         } else {
@@ -247,7 +207,7 @@ class EventPublishedViewController: UIViewController {
     }
 
     @IBAction func rsvpButtonTapped(_ sender: Any) {
-        if ((userID != adminID) && (userID != "ADMIN")) {
+        if !isAdmin {
             rsvp = !rsvp
             changeShelfSettings(button: 2)
         } else {

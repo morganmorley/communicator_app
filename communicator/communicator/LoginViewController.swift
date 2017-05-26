@@ -18,13 +18,13 @@ class LoginViewController: UIViewController {
     
     // outlets that change depending upon login or create account is active
     @IBOutlet weak var loginButton: UIButton!
-    @IBOutlet weak var confirmTextView: UITextView!
 
     // outlets that stay the same
     @IBOutlet weak var loginSelector: UISegmentedControl!
-    @IBOutlet weak var passwordTextView: UITextView!
-    @IBOutlet weak var emailTextView: UITextView!
     
+    @IBOutlet weak var confirmTextField: UITextField!
+    @IBOutlet weak var passwordTextField: UITextField!
+    @IBOutlet weak var emailTextField: UITextField!
     // boolean storing whether the login view is currently active
     var isLogin: Bool = true
     
@@ -49,16 +49,16 @@ class LoginViewController: UIViewController {
     func setView() {
         if isLogin {
             loginButton.setTitle("Login", for: .normal)
-            confirmTextView.isHidden = true
+            confirmTextField.isHidden = true
         } else {
             loginButton.setTitle("Sign Up", for: .normal)
-            confirmTextView.isHidden = false
+            confirmTextField.isHidden = false
         }
     }
 
     // logs into or registers user with Firebase
     @IBAction func loginButtonTapped(_ sender: UIButton) {
-        guard let email = emailTextView.text, let pass = passwordTextView.text else { print("login failed"); return }
+        guard let email = emailTextField.text, let pass = passwordTextField.text else { print("login failed"); return }
         
         func completeSignIn(user : FIRUser?, error : Error?) {
             guard user != nil else { print("an error occured \(String(describing: error))"); return }
@@ -67,7 +67,7 @@ class LoginViewController: UIViewController {
                 let emailArr = email.components(separatedBy: "@")
                 let username = emailArr[0]
                 let userData = ["email": email, "username": username]
-                ref?.child("users").child(userID!).child("details").setValue(userData)
+                ref?.child("user_details").child(userID!).child("details").setValue(userData)
             }
             self.performSegue(withIdentifier: "goToShelf", sender: self)
         }
@@ -77,7 +77,7 @@ class LoginViewController: UIViewController {
             // sign in with Firebase
             FIRAuth.auth()?.signIn(withEmail: email, password: pass, completion: completeSignIn)
         } else {
-            guard let confirmation = confirmTextView.text else { print("confirm password error"); return }
+            guard let confirmation = confirmTextField.text else { print("confirm password error"); return }
             if (email.components(separatedBy: "@")[1] != "bennington.edu")
                 || (pass.characters.count > 16)
                 || (email.characters.count > 254) {
@@ -95,9 +95,9 @@ class LoginViewController: UIViewController {
     
     // dismiss the keyboard when the view is tapped on
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        emailTextView.resignFirstResponder()
-        passwordTextView.resignFirstResponder()
+        emailTextField.resignFirstResponder()
+        passwordTextField.resignFirstResponder()
+        confirmTextField.resignFirstResponder()
     }
-
 }
 

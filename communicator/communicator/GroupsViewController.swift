@@ -19,8 +19,21 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     // titles of groups to be posted to the shelf and stream:
     var groupData = [String: String]()
-    var groupTitles = [[String]]()
-    let headerTitles = ["Shelf", "Stream"]
+    var shelfTitles: [String] = []
+    var streamTitles: [String] = []
+    var headerTitles: [String] = []
+    var groupTitles: [[String]] {
+        var twoDimArray: [[String]] = []
+        if shelfTitles.count > 0 {
+            headerTitles.append("Shelf")
+            twoDimArray.append(shelfTitles)
+        }
+        if streamTitles.count > 0 {
+            headerTitles.append("Stream")
+            twoDimArray.append(streamTitles)
+        }
+        return twoDimArray
+    }
     
     @IBOutlet weak var tableView: UITableView!
     
@@ -33,14 +46,16 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         ref = FIRDatabase.database().reference()
         groupsRef = ref?.child("groups").child("current")
         let userID = FIRAuth.auth()?.currentUser?.uid
-        let userRef = ref?.child("users").child(userID!)
+        let userRef = ref?.child("user_details").child(userID!)
         
         // post the groups that are in the stream
         userRef?.child("linked_groups").observeSingleEvent(of: .value, with: { (snapshot) in
             if let shelfGroups = snapshot.value as? Dictionary<String,String> {
                 for (shelfGroupID, shelfGroupName) in shelfGroups {
                     self.groupData[shelfGroupName] = shelfGroupID
-                    self.groupTitles[0].append(shelfGroupName)
+                    self.shelfTitles.append(shelfGroupName)
+                    // Reload the tableView
+                    self.tableView.reloadData()
                 }
             }
             // post all events that are in the database
@@ -50,7 +65,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                         if let groupTitle = data["details"]?["title"] {
                             if self.groupData[groupTitle] == nil { // take shelved groups out of the stream.
                                 self.groupData[groupTitle] = groupID
-                                self.groupTitles[1].append(groupTitle)
+                                self.streamTitles.append(groupTitle)
                                 // Reload the tableView
                                 self.tableView.reloadData()
                             }
@@ -71,12 +86,17 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        if groupTitles.count == 0 { return nil }
+        if groupTitles[section].count == 0 { return nil }
         if section < headerTitles.count { return headerTitles[section] }
         return nil
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // number of cells needed
+        if numberOfSectionsInTableView(tableView: tableView) == 0 {
+            return 0
+        }
         return groupTitles[section].count
     }
     
@@ -86,6 +106,10 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         return cell!
     }
     
+    @IBAction func addGroup(_ sender: Any) {
+        self.present(EditGroupViewController(), animated: true, completion: nil)
+
+    }
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "goToGroup" {
             if let groupPublishedViewController = segue.destination as? GroupPublishedViewController {

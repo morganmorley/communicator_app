@@ -109,7 +109,7 @@ class GroupPublishedViewController:  UIViewController, UITableViewDelegate, UITa
 
     @IBAction func bottomButtonTapped(_ sender: Any) {
         if isAdmin {
-            self.performSegue(withIdentifier: "goToEditGroup", sender: self)
+            self.present(EditGroupViewController(), animated: true, completion: nil)
         } else {
             userRef?.child("linked_groups").child(groupID!).removeValue()
             groupRef?.child("linked_users").child(userID!).removeValue()
