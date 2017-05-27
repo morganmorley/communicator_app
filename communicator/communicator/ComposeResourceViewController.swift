@@ -11,35 +11,48 @@ import FirebaseDatabase
 import FirebaseAuth
 
 class ComposeResourceViewController: UIViewController {
-    
+
     @IBOutlet weak var textView: UITextView!
     var ref: FIRDatabaseReference?
     var groupID: String?
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
         ref = FIRDatabase.database().reference()
+        if groupID != nil {
+            ref?.child("groups").child("current").child(groupID!).child("resources").observeSingleEvent(of: .value, with: { (snapshot) in
+                let resources = snapshot.value as? String
+                self.textView.text = resources ?? ""
+            })
+        }
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
     
     @IBAction func savePost(_ sender: Any) {
         //Post the data to firebase
-        let resourceText = textView.text
-        if resourceText != "" { // checks if inserted an empty title
-            ref?.child("posts").child("groups").child(groupID!).setValue(["resources": resourceText!])
-        }
-        //Dismiss the popover
-        presentingViewController?.dismiss(animated: true, completion: nil)
+        let resourceText = textView.text ?? ""
+        ref?.child("groups").child("drafts").child(groupID!).child("resources").setValue(resourceText)
+        self.performSegue(withIdentifier: "goToEditGroup", sender: self)
+    }
+
+    @IBAction func cancelPost(_ sender: Any) {
+        self.performSegue(withIdentifier: "goToEditGroup", sender: self)
     }
     
-    @IBAction func cancelPost(_ sender: Any) {
-        //Dismiss the popover
-        presentingViewController?.dismiss(animated: true, completion: nil)
+    // dismiss the keyboard when the view is tapped on
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        textView.resignFirstResponder()
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "goToEditGroup" {
+            if let editGroupViewController = segue.destination as? EditGroupViewController {
+                editGroupViewController.groupID = groupID!
+            }
+        }
     }
 
 }

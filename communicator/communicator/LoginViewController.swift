@@ -31,16 +31,14 @@ class LoginViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
         ref = FIRDatabase.database().reference()
         setView()
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
-
+    
     // switches between login and create account views and buttons
     @IBAction func loginSelectorChanged(_ sender: Any) {
         // change the boolean
@@ -52,18 +50,15 @@ class LoginViewController: UIViewController {
     func setView() {
         if isLogin {
             loginButton.setTitle("Login", for: .normal)
-            confirmLabel.isHidden = true
             confirmTextField.isHidden = true
         } else {
             loginButton.setTitle("Sign Up", for: .normal)
-            confirmLabel.isHidden = false
             confirmTextField.isHidden = false
         }
     }
-
+    
     // logs into or registers user with Firebase
     @IBAction func loginButtonTapped(_ sender: UIButton) {
-        // TODO - Form validation on email and password - separate function
         guard let email = emailTextField.text, let pass = passwordTextField.text else { print("login failed"); return }
         
         func completeSignIn(user : FIRUser?, error : Error?) {
@@ -73,7 +68,7 @@ class LoginViewController: UIViewController {
                 let emailArr = email.components(separatedBy: "@")
                 let username = emailArr[0]
                 let userData = ["email": email, "username": username]
-                ref?.child("users").child(userID!).child("details").setValue(userData)
+                ref?.child("user_details").child(userID!).child("details").setValue(userData)
             }
             self.performSegue(withIdentifier: "goToShelf", sender: self)
         }
@@ -82,13 +77,17 @@ class LoginViewController: UIViewController {
         if isLogin {
             // sign in with Firebase
             FIRAuth.auth()?.signIn(withEmail: email, password: pass, completion: completeSignIn)
-            //TODO - PRINT THE ERROR HANDLING FOR THE ERRORS FOR SIGNIN FUNCTION - NOT GETTING TO COMPLETION
         } else {
-            guard let confirmation = confirmTextField.text else { print("confirm password"); return }
+            guard let confirmation = confirmTextField.text else { print("confirm password error"); return }
+            if (email.components(separatedBy: "@")[1] != "bennington.edu")
+                || (pass.characters.count > 16)
+                || (email.characters.count > 254) {
+                print("form invalid error")
+                return
+            }
             if pass == confirmation {
                 //register with Firebase
                 FIRAuth.auth()?.createUser(withEmail: email, password: pass, completion: completeSignIn)
-                //TODO - PRINT THE ERROR HANDLING FOR THE ERRORS FOR SIGNIN FUNCTION - NOT GETTING TO COMPLETION
             } else {
                 print("password and password confirmation do not match")
             }
@@ -99,7 +98,9 @@ class LoginViewController: UIViewController {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         emailTextField.resignFirstResponder()
         passwordTextField.resignFirstResponder()
+        confirmTextField.resignFirstResponder()
     }
+
 
 }
 

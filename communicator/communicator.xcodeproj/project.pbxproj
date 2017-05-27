@@ -25,7 +25,8 @@
 		D7D71C921E6D3B5900D5E5A0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D7D71C911E6D3B5900D5E5A0 /* Assets.xcassets */; };
 		D7D71C951E6D3B5900D5E5A0 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D7D71C931E6D3B5900D5E5A0 /* LaunchScreen.storyboard */; };
 		D7D71C9D1E6D3BA700D5E5A0 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D7D71C9C1E6D3BA700D5E5A0 /* GoogleService-Info.plist */; };
-		D7DD88D01EAE33F3001CE27C /* GroupEventsStreamViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7DD88CF1EAE33F3001CE27C /* GroupEventsStreamViewController.swift */; };
+		D7F0259E1ED8FFB600C022B1 /* PublishedResourceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7F0259D1ED8FFB600C022B1 /* PublishedResourceViewController.swift */; };
+		D7F025A01ED92F3800C022B1 /* GroupEventViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7F0259F1ED92F3800C022B1 /* GroupEventViewController.swift */; };
 		D7FF11B21EA4FCDE0051AD2F /* MyProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7FF11B11EA4FCDE0051AD2F /* MyProfileViewController.swift */; };
 /* End PBXBuildFile section */
 
@@ -52,7 +53,8 @@
 		D7D71C941E6D3B5900D5E5A0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		D7D71C961E6D3B5900D5E5A0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D7D71C9C1E6D3BA700D5E5A0 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
-		D7DD88CF1EAE33F3001CE27C /* GroupEventsStreamViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GroupEventsStreamViewController.swift; sourceTree = "<group>"; };
+		D7F0259D1ED8FFB600C022B1 /* PublishedResourceViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PublishedResourceViewController.swift; sourceTree = "<group>"; };
+		D7F0259F1ED92F3800C022B1 /* GroupEventViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GroupEventViewController.swift; sourceTree = "<group>"; };
 		D7FF11B11EA4FCDE0051AD2F /* MyProfileViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MyProfileViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -110,7 +112,7 @@
 				D7D71C8C1E6D3B5900D5E5A0 /* LoginViewController.swift */,
 				D78D02C61E76284A0007DCB6 /* EventStreamViewController.swift */,
 				D70BC1DB1EAD9AAC008DD107 /* GroupStreamViewController.swift */,
-				D7DD88CF1EAE33F3001CE27C /* GroupEventsStreamViewController.swift */,
+				D7F0259F1ED92F3800C022B1 /* GroupEventViewController.swift */,
 				D78D02C41E761D3D0007DCB6 /* ComposeResourceViewController.swift */,
 				D79C42A91E76E859000C062C /* RosterViewController.swift */,
 				D7FF11B11EA4FCDE0051AD2F /* MyProfileViewController.swift */,
@@ -121,6 +123,7 @@
 				D795CB851E80A8B3007D7408 /* EventPublishedViewController.swift */,
 				D70BC1DF1EAD9CEC008DD107 /* GroupPublishedViewController.swift */,
 				D795CB831E80A7DD007D7408 /* ShelfViewController.swift */,
+				D7F0259D1ED8FFB600C022B1 /* PublishedResourceViewController.swift */,
 				D79C42A61E76E5BC000C062C /* Main.storyboard */,
 				D7D71C911E6D3B5900D5E5A0 /* Assets.xcassets */,
 				D7D71C931E6D3B5900D5E5A0 /* LaunchScreen.storyboard */,
@@ -261,6 +264,8 @@
 				D78D02C71E76284A0007DCB6 /* EventStreamViewController.swift in Sources */,
 				D7B82F081EB6A68F0028F3C2 /* SetTimeViewController.swift in Sources */,
 				D78D02C51E761D3D0007DCB6 /* ComposeResourceViewController.swift in Sources */,
+				D7F025A01ED92F3800C022B1 /* GroupEventViewController.swift in Sources */,
+				D7F0259E1ED8FFB600C022B1 /* PublishedResourceViewController.swift in Sources */,
 				D795CB841E80A7DD007D7408 /* ShelfViewController.swift in Sources */,
 				D7D71C8D1E6D3B5900D5E5A0 /* LoginViewController.swift in Sources */,
 				D7D71C8B1E6D3B5900D5E5A0 /* AppDelegate.swift in Sources */,
@@ -268,7 +273,6 @@
 				D70BC1E01EAD9CEC008DD107 /* GroupPublishedViewController.swift in Sources */,
 				D70BC1DE1EAD9CB1008DD107 /* EditGroupViewController.swift in Sources */,
 				D795CB861E80A8B3007D7408 /* EventPublishedViewController.swift in Sources */,
-				D7DD88D01EAE33F3001CE27C /* GroupEventsStreamViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

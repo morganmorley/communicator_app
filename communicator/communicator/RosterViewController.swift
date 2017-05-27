@@ -21,19 +21,17 @@ class RosterViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
         tableView.delegate = self
         tableView.dataSource = self
-        
         // Set the firebase database reference:
         ref = FIRDatabase.database().reference()
         
         // Retrieve posts for the stream and listen for changes from the database:
-        ref?.child("posts").child(postType!).child(postID!).child("linked_users").observeSingleEvent(of: .value, with: { (snapshot) in
+        ref?.child(postType!).child(postID!).child("linked_users").observeSingleEvent(of: .value, with: { (snapshot) in
             if let users = snapshot.value as? Dictionary<String, String> {
                 for (userID, role) in users {
                     if role == "rsvp" {
-                        self.ref?.child("users").child(userID).child("details").child("username").observeSingleEvent(of: .value, with: { (snapshot) in
+                        self.ref?.child("user_details").child(userID).child("details").child("username").observeSingleEvent(of: .value, with: { (snapshot) in
                             if let value = snapshot.value as? String {
                                 self.userData[value] = userID
                                 self.usernames.append(value)
@@ -50,7 +48,6 @@ class RosterViewController: UIViewController, UITableViewDelegate, UITableViewDa
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -69,7 +66,7 @@ class RosterViewController: UIViewController, UITableViewDelegate, UITableViewDa
         if segue.identifier == "goToProfile" {
             if let profileViewController = segue.destination as? ProfileViewController {
                 // send appropriate username to userIDForLookup variable on Profile View Controller
-                profileViewController.userIDForLookup = userData[((sender as? UITableViewCell)?.textLabel?.text)!]
+                profileViewController.userID = userData[((sender as? UITableViewCell)?.textLabel?.text)!]
             }
         }
     }

@@ -12,52 +12,51 @@ import FirebaseAuth
 
 class SetTimeViewController: UIViewController {
 
-    var isDraft: Bool?
     var eventID: String?
     var ref: FIRDatabaseReference?
-
-    @IBOutlet weak var startDateTimeSetter: UIDatePicker!
-    @IBOutlet weak var endDateTimeSetter: UIDatePicker!
+    var eventRef: FIRDatabaseReference?
+    
     var startDateTime: String = ""
     var endDateTime: String = ""
-
+    
+    @IBOutlet weak var startDateTimeSetter: UIDatePicker!
+    @IBOutlet weak var endDateTimeSetter: UIDatePicker!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
         ref = FIRDatabase.database().reference()
+        eventRef = ref?.child("events").child("drafts").child(eventID!)
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
     
     @IBAction func savePost(_ sender: Any) {
-        //TODO - save datetimes to drafts or posts from strings
-        let eventDetails = ["start_date_time": startDateTime, "end_date_time": endDateTime]
-        ref?.child("draft_posts").child("events").child(eventID!).setValue(eventDetails)
+        eventRef?.child("details").child("start_datetime").setValue(startDateTime)
+        eventRef?.child("details").child("end_datetime").setValue(endDateTime)
+        self.performSegue(withIdentifier: "goToEditEvent", sender: self)
+    }
+    
+    @IBAction func cancelPost(_ sender: Any) {
         self.performSegue(withIdentifier: "goToEditEvent", sender: self)
     }
     
     @IBAction func startSetterChanged(_ sender: Any) {
         //set date and time for storage
-        startDateTime =  DateFormatter.localizedString(from: startDateTimeSetter.date, dateStyle:
-            DateFormatter.Style.full, timeStyle: DateFormatter.Style.short)
+        startDateTime =  DateFormatter.localizedString(from: startDateTimeSetter.date, dateStyle: DateFormatter.Style.full, timeStyle: DateFormatter.Style.short)
     }
     
     @IBAction func endSetterChanged(_ sender: Any) {
         //set date and time for storage
-        endDateTime =  DateFormatter.localizedString(from: endDateTimeSetter.date, dateStyle:
-            DateFormatter.Style.full, timeStyle: DateFormatter.Style.short)
+        endDateTime =  DateFormatter.localizedString(from: endDateTimeSetter.date, dateStyle: DateFormatter.Style.full, timeStyle: DateFormatter.Style.short)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "goToEditEvent" {
             if let editEventViewController = segue.destination as? EditEventViewController {
-                //send appropriate eventID for saving the time on Set Tiime View Controller
+                //send appropriate eventID for saving the time on Set Time View Controller
                 editEventViewController.eventID = eventID!
-                editEventViewController.isDraft = isDraft!
             }
         }
     }

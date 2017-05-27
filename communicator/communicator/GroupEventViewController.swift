@@ -1,8 +1,8 @@
 //
-//  EventPublishedViewController.swift
+//  GroupEventViewController.swift
 //  communicator
 //
-//  Created by Morgan Morley Mills on 3/20/17.
+//  Created by Morgan Morley Mills on 5/26/17.
 //  Copyright © 2017 Morgan Morley Mills. All rights reserved.
 //
 
@@ -10,27 +10,28 @@ import UIKit
 import FirebaseDatabase
 import FirebaseAuth
 
-class EventPublishedViewController: UIViewController {
-
+class GroupEventViewController: UIViewController {
+    
     var ref: FIRDatabaseReference?
     var eventRef: FIRDatabaseReference?
     var userRef: FIRDatabaseReference?
     var eventID: String?
     var userID: String?
     var adminID: String?
-
+    
     var isAdmin: Bool = false
     var shelf: Bool = false
     var rsvp: Bool = false
-
-    @IBOutlet weak var titleLabel: UILabel!
-    @IBOutlet weak var adminButton: UIButton!
-    @IBOutlet weak var endDateTime: UILabel!
-    @IBOutlet weak var rsvpButton: UIButton!
-    @IBOutlet weak var locationTextView: UITextView!
+    
+    @IBOutlet weak var shelfEditButton: UIBarButtonItem!
     @IBOutlet weak var descTextView: UITextView!
+    @IBOutlet weak var locationTextView: UITextView!
+    @IBOutlet weak var rsvpButton: UIButton!
+    @IBOutlet weak var adminButton: UIButton!
+    @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var startDateTime: UILabel!
-    @IBOutlet weak var shelfEditButton: UIButton!
+    @IBOutlet weak var endDateTime: UILabel!
+    
     
     func findAdminID() {
         // Find the UID of the admin to search for their username in users
@@ -53,8 +54,8 @@ class EventPublishedViewController: UIViewController {
                     //set admin view
                     if self.adminID == self.userID {
                         self.isAdmin = true
-                        self.shelfEditButton.setTitle("Edit", for: .normal)
                         self.rsvpButton.setTitle("RSVP List",for: .normal)
+                        self.rsvpButton.isHidden = false
                         self.shelf = true
                     }
                 } else {
@@ -81,12 +82,13 @@ class EventPublishedViewController: UIViewController {
                 }
                 if !self.isAdmin {
                     self.rsvpButton.setTitle("RSVP", for: .normal)
+                    self.rsvpButton.isHidden = true
                 }
                 // set rsvp label and button; set addDeleteButton title
                 self.userRef?.child("linked_events").child(self.eventID!).observeSingleEvent(of: .value, with: { (snapshot) in
                     if let value = snapshot.value as? String {
                         if ((value == "rsvp") || (value == "shelf")) {
-                            self.shelfEditButton.setTitle("Unshelf", for: .normal)
+                            self.shelfEditButton.title = "Unshelf"
                         }
                         if (value == "rsvp") {
                             self.rsvpButton.setTitle("Cancel RSVP", for: .normal)
@@ -102,18 +104,19 @@ class EventPublishedViewController: UIViewController {
         super.viewDidLoad()
         // Set up references to the database and find the current user's ID
         ref = FIRDatabase.database().reference()
-        eventRef = ref?.child("events").child("current").child(eventID!)
+        eventRef = ref?.child("posts").child("events").child(eventID!)
         userID = FIRAuth.auth()?.currentUser?.uid
-        userRef = ref?.child("user_details").child(userID!)
+        userRef = ref?.child("users").child(userID!)
         
         //Default settings for view
-        shelfEditButton.setTitle("Shelf", for: .normal)
-
-
+        shelfEditButton.title = "Shelf"
+        rsvpButton.isHidden = true
+        
+        
         //Query the database
         findAdminID()
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
@@ -123,7 +126,7 @@ class EventPublishedViewController: UIViewController {
             //delete event from user's linked events and event's linked users
             userRef?.child("linked_events").child(eventID!).removeValue()
             eventRef?.child("linked_users").child(userID!).removeValue()
-            shelfEditButton.setTitle("Shelf", for: .normal)
+            shelfEditButton.title = "Shelf"
             rsvpButton.setTitle("RSVP", for: .normal)
         } else {
             switch (button) {
@@ -133,7 +136,7 @@ class EventPublishedViewController: UIViewController {
                     // add event to user's shelf
                     userRef?.child("linked_events").child(eventID!).setValue(titleLabel.text)
                     eventRef?.child("linked_users").child(userID!).setValue("shelf")
-                    shelfEditButton.setTitle("Unshelf", for: .normal)
+                    shelfEditButton.title = "Unshelf"
                 } else if ((!shelf) && rsvp) {
                     // remove event from shelf that user is rsvp-ed to
                     rsvp = false
@@ -158,7 +161,7 @@ class EventPublishedViewController: UIViewController {
             if (shelf && rsvp) {
                 eventRef?.child("linked_users").child(userID!).setValue("rsvp")
                 userRef?.child("linked_events").child(eventID!).setValue(titleLabel.text as? String ?? "")
-                shelfEditButton.setTitle("Unshelf", for: .normal)
+                shelfEditButton.title = "Unshelf"
                 rsvpButton.setTitle("Cancel RSVP", for: .normal)
             }
         }
@@ -204,5 +207,5 @@ class EventPublishedViewController: UIViewController {
             }
         }
     }
-
+    
 }
